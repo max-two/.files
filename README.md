@@ -12,3 +12,4 @@ This repository can be used to setup my preferred development environment for ma
 - Fonts
 - Set zed as default editor
 - git config
+- github setup

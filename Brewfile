@@ -1,0 +1,5 @@
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
+cask "arc"
+cask "font-caskaydia-cove-nerd-font"
+cask "zed"
