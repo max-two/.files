@@ -6,6 +6,7 @@ This repository can be used to setup my preferred development environment on mac
 - [Homebrew](https://brew.sh/) as the package manager
 - [homebrew-autoupdate](https://github.com/DomT4/homebrew-autoupdate) to keep packages updated automatically
 - [homebrew-file](https://homebrew-file.readthedocs.io/en/latest/) to keep Brewfile up to date automatically
+- [Antidote](https://antidote.sh/) to manage zsh plugins
 - A Launchd script to sync this repo once a day automatically
 
 # Setup
@@ -22,6 +23,8 @@ Just run:
 - Set zed as default editor
 - git config
 - Auto github auth setup
+- Auto sync
+- Auto update antidote
 - AI
   - Get key
   - Raycast

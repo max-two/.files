@@ -28,10 +28,13 @@ alias ...="popd"
 setopt autocd # cd without typing cd
 setopt auto_pushd # Put cd history onto stack
 
-# Auto ls after cd
-function chpwd() {
-    ls
-}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Initialize Antidote
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
+antidote load
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,13 +48,18 @@ if [ $? -eq 0 ] && [ -d "$brew_completion" ];then
 fi
 
 # Initialize completions
-autoload -U compinit
+autoload -Uz compinit
 compinit
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Other
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Auto ls after changing directory
+function chpwd() {
+    ls
+}
 
 # Wrap homebrew with brewfile
 if [ -f $(brew --prefix)/etc/brew-wrap ];then
