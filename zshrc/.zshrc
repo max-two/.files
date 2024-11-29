@@ -30,6 +30,7 @@ if [ $? -eq 0 ] && [ -d "$brew_completion" ];then
   fpath=($brew_completion $fpath)
 fi
 
+# Initialize completions
 autoload -U compinit
 compinit
 
@@ -37,6 +38,14 @@ compinit
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Other
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# zsh auto cd
+setopt autocd
+
+# Auto ls after cd
+function chpwd() {
+    ls
+}
 
 # Wrap homebrew with brewfile
 if [ -f $(brew --prefix)/etc/brew-wrap ];then
