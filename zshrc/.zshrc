@@ -18,6 +18,20 @@ alias rc="source $HOME/.zshrc"
 alias g="git"
 alias z="zed"
 alias cat="bat"
+alias ...="popd"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ZSH Configuration
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+setopt autocd # cd without typing cd
+setopt auto_pushd # Put cd history onto stack
+
+# Auto ls after cd
+function chpwd() {
+    ls
+}
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,14 +52,6 @@ compinit
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Other
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# zsh auto cd
-setopt autocd
-
-# Auto ls after cd
-function chpwd() {
-    ls
-}
 
 # Wrap homebrew with brewfile
 if [ -f $(brew --prefix)/etc/brew-wrap ];then
