@@ -15,6 +15,7 @@ export HOMEBREW_BREWFILE_APPSTORE=0 # Exclude AppStore apps from brewfile
 # Aliases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 alias rc="source $HOME/.zshrc"
+alias zshrc="zed $HOME/.zshrc"
 alias g="git"
 alias z="zed"
 alias cat="bat"
