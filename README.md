@@ -1,5 +1,5 @@
 # Description
-This repository can be used to setup my preferred development environment for macOS.
+This repository can be used to setup my preferred development environment on macOS.
 
 ## How does it work?
 - [GNU Stow](https://www.gnu.org/software/stow/manual/stow.html) to setup dotfiles
@@ -22,9 +22,6 @@ Just run:
 - Set zed as default editor
 - git config
 - Auto github auth setup
-- exports
-- Aliases
-  - bat, git, ls, zed, rc
 - AI
   - Get key
   - Raycast
