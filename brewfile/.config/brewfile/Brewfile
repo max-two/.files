@@ -1,0 +1,22 @@
+
+# tap repositories and their packages
+
+tap homebrew/core
+brew bat
+brew stow
+
+tap homebrew/cask
+cask arc
+cask font-caskaydia-cove-nerd-font
+cask raycast
+cask zed
+
+tap homebrew/bundle
+
+tap homebrew/cask-fonts
+
+tap pikachuexe/freetube
+cask pikachuexe-freetube
+
+tap rcmdnk/file
+brew brew-file

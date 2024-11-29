@@ -15,7 +15,6 @@ Just run:
 ```
 
 # TODO
-- Setup dotfiles with Stow
 - Configure zsh
   - Antibody
   - Prompt
@@ -24,9 +23,8 @@ Just run:
 - git config
 - Auto github auth setup
 - exports
- - export HOMEBREW_BREWFILE=~/.brewfile
 - Aliases
-  - bat, git, ls, zed
+  - bat, git, ls, zed, rc
 - AI
   - Get key
   - Raycast

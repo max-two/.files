@@ -2,5 +2,13 @@
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew analytics off
 
-# Install packages
-brew bundle install --file=Brewfile
+# Install stow and brewfile
+brew install stow
+brew install rcmdnk/file/brew-file
+
+# Setup dotfiles
+stow brewfile
+stow zshrc
+
+# Install the rest of the packages
+brew file install
