@@ -10,8 +10,9 @@ This repository can be used to setup my preferred development environment on mac
 - A Launchd script to sync this repo once a day automatically
 
 # Setup
-Just run:
+Clone the repo, then cd into it and run:
 ```
+chmod +x setup.sh
 ./setup.sh
 ```
 
