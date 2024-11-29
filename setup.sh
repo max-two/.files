@@ -12,3 +12,6 @@ stow zshrc
 
 # Install the rest of the packages
 brew file install
+
+# Setup touch id sudo
+sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local
