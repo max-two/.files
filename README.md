@@ -1,21 +1,36 @@
 # Description
 This repository can be used to setup my preferred development environment for macOS.
 
+## How does it work?
+- [GNU Stow](https://www.gnu.org/software/stow/manual/stow.html) to setup dotfiles
+- [Homebrew](https://brew.sh/) as the package manager
+- [homebrew-autoupdate](https://github.com/DomT4/homebrew-autoupdate) to keep packages updated automatically
+- [homebrew-file](https://homebrew-file.readthedocs.io/en/latest/) to keep Brewfile up to date automatically
+- A Launchd script to sync this repo once a day automatically
+
 # Setup
+Just run:
 ```
 ./setup.sh
 ```
 
 # TODO
-- Setup dotfiles
-- zshrc
-- zed
-- Fonts
+- Setup dotfiles with Stow
+- Configure zsh
+  - Antibody
+  - Prompt
+- Configure zed
 - Set zed as default editor
 - git config
-- github setup
+- Auto github auth setup
 - exports
  - export HOMEBREW_BREWFILE=~/.brewfile
 - Aliases
   - bat, git, ls, zed
-- open command?
+- AI
+  - Get key
+  - Raycast
+  - Zed
+- Raycast
+  - Configure
+  - Sync?
