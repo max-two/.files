@@ -1,5 +1,5 @@
-# Description
-This repository can be used to setup my preferred development environment on macOS.
+# Dotfiles
+My personal macOS configuration.
 
 ## How does it work?
 - [GNU Stow](https://www.gnu.org/software/stow/manual/stow.html) to setup dotfiles
@@ -9,14 +9,14 @@ This repository can be used to setup my preferred development environment on mac
 - [Antidote](https://antidote.sh/) to manage zsh plugins
 - A Launchd script to sync this repo once a day automatically
 
-# Setup
+## Setup
 Clone the repo, then cd into it and run:
 ```
 chmod +x setup.sh
 ./setup.sh
 ```
 
-# TODO
+## TODO
 - Configure zsh
   - Antibody
   - Prompt
@@ -33,3 +33,5 @@ chmod +x setup.sh
 - Raycast
   - Configure
   - Sync?
+- [Aerospace](https://github.com/nikitabobko/AeroSpace) - [Video guide](https://www.youtube.com/watch?v=5nwnJjr5eOo)
+- [Sketchy Bar](https://felixkratz.github.io/SketchyBar/)

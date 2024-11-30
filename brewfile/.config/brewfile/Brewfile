@@ -9,6 +9,7 @@ brew stow
 tap homebrew/cask
 cask arc
 cask font-caskaydia-cove-nerd-font
+cask font-meslo-for-powerlevel10k
 cask raycast
 cask zed
 

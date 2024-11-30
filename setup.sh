@@ -8,6 +8,7 @@ brew install rcmdnk/file/brew-file
 # Setup dotfiles
 stow brewfile
 stow zshrc
+stow p10k
 
 # Install the rest of the packages
 brew file install
