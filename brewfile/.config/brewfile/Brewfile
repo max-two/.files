@@ -4,7 +4,10 @@
 tap homebrew/core
 brew antidote
 brew bat
+brew eza
+brew fzf
 brew stow
+brew zoxide
 
 tap homebrew/cask
 cask arc

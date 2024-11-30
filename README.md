@@ -26,6 +26,8 @@ chmod +x setup.sh
 - Auto github auth setup
 - Auto sync
 - Auto update antidote
+- Prompt at bottom always
+  - Add a little padding below the prompt too
 - AI
   - Get key
   - Raycast

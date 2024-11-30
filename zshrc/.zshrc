@@ -65,13 +65,13 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Antidote
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
-antidote load
+# Completions
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' # Case insensitive completions
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}" # Color completions
+zstyle ':completion:*:git-checkout:*' sort false # Disable sort when completing `git checkout`
+zstyle ':completion:*' menu no # Lets fzf capture unambiguous prefix
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 -a --color=always $realpath' # Show fzf directory previews for cd
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 -a --color=always $realpath' # Show fzf directory previews for zoxide
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,6 +89,14 @@ autoload -Uz compinit && compinit
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Antidote
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
+antidote load
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Other
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -101,3 +109,9 @@ function chpwd() {
 if [ -f $(brew --prefix)/etc/brew-wrap ];then
   source $(brew --prefix)/etc/brew-wrap
 fi
+
+# Enable fzf integration
+eval "$(fzf --zsh)"
+
+# Enable zoxide
+eval "$(zoxide init --cmd cd zsh)"
