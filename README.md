@@ -30,6 +30,7 @@ chmod +x setup.sh
   - Get key
   - Raycast
   - Zed
+- Switch to Zen browser
 - Raycast
   - Configure
   - Sync?
