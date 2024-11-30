@@ -23,6 +23,8 @@ export HOMEBREW_NO_ENV_HINTS=1 # Turn off hints
 export HOMEBREW_BREWFILE_LEAVES=1 # Exclude dependencies from brewfile
 export HOMEBREW_BREWFILE_APPSTORE=0 # Exclude AppStore apps from brewfile
 
+# Bat
+export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Make man pages colorful
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Aliases
@@ -34,7 +36,7 @@ alias z='zed'
 alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
 alias cat='bat'
 alias ...='popd'
-
+alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Keybindings
@@ -110,6 +112,11 @@ function chpwd() {
 if [ -f $(brew --prefix)/etc/brew-wrap ];then
   source $(brew --prefix)/etc/brew-wrap
 fi
+
+# Better git diff with bat
+diff() {
+    git diff --name-only --relative --diff-filter=d | xargs bat --diff
+}
 
 # Enable fzf integration
 eval "$(fzf --zsh)"
