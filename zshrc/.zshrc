@@ -54,6 +54,7 @@ bindkey "^[[B" history-search-forward
 # cd
 setopt autocd # cd without typing cd
 setopt auto_pushd # Put cd history onto stack
+setopt pushd_ignore_dups # Ignore duplicates for cd stack
 
 # History
 HISTSIZE=9999
