@@ -76,8 +76,7 @@ if [ $? -eq 0 ] && [ -d "$brew_completion" ];then
 fi
 
 # Initialize completions
-autoload -Uz compinit
-compinit
+autoload -Uz compinit && compinit
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
