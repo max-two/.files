@@ -69,18 +69,17 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Completions
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' # Case insensitive completions
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}" # Color completions
 zstyle ':completion:*:git-checkout:*' sort false # Disable sort when completing `git checkout`
 zstyle ':completion:*' menu no # Lets fzf capture unambiguous prefix
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 -a --color=always $realpath' # Show fzf directory previews for cd
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 -a --color=always $realpath' # Show fzf directory previews for zoxide
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Completions
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Brewfile
 brew_completion=$(brew --prefix 2>/dev/null)/share/zsh/zsh-site-functions
@@ -114,7 +113,7 @@ if [ -f $(brew --prefix)/etc/brew-wrap ];then
   source $(brew --prefix)/etc/brew-wrap
 fi
 
-# Better git diff with bat
+# Colored git diff with bat
 diff() {
     git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
@@ -122,5 +121,5 @@ diff() {
 # Enable fzf integration
 eval "$(fzf --zsh)"
 
-# Enable zoxide
+# Enable zoxide (overrides cd command)
 eval "$(zoxide init --cmd cd zsh)"
