@@ -118,6 +118,9 @@ eval "$(zoxide init --cmd cd zsh)"
 # direnv
 eval "$(direnv hook zsh)"
 
+# fnm
+eval "$(fnm env --shell zsh --use-on-cd --version-file-strategy=recursive)"
+
 # Wrap homebrew with brewfile
 if [ -f $(brew --prefix)/etc/brew-wrap ];then
   source $(brew --prefix)/etc/brew-wrap

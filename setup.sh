@@ -13,5 +13,8 @@ stow p10k
 # Install the rest of the packages
 brew file install
 
+# Install lts node version
+fnm install --lts
+
 # Setup touch id sudo
 sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local

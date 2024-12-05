@@ -6,6 +6,7 @@ brew antidote
 brew bat
 brew direnv
 brew eza
+brew fnm
 brew fzf
 brew stow
 brew zoxide
