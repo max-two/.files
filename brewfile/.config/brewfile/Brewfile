@@ -4,6 +4,7 @@
 tap homebrew/core
 brew antidote
 brew bat
+brew direnv
 brew eza
 brew fzf
 brew stow

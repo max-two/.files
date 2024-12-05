@@ -102,6 +102,20 @@ antidote load
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Integrations
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# fzf
+eval "$(fzf --zsh)"
+
+# zoxide (overrides cd command)
+eval "$(zoxide init --cmd cd zsh)"
+
+# direnv
+eval "$(direnv hook zsh)"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Other
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -119,9 +133,3 @@ fi
 diff() {
     git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
-
-# Enable fzf integration
-eval "$(fzf --zsh)"
-
-# Enable zoxide (overrides cd command)
-eval "$(zoxide init --cmd cd zsh)"
