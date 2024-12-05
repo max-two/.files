@@ -1,0 +1,14 @@
+[user]
+    name = Max McKinley
+    email = max.mck@hey.com
+
+[color]
+    ui = auto
+
+[alias]
+    a = add --all
+    b = branch
+    c = checkout
+    cm = commit -m
+    p = push
+    s = status

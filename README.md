@@ -19,7 +19,6 @@ chmod +x setup.sh
   - Configure
     - Add some padding to bottom of terminal
   - Save zed settings here
-- git config
 - Auto github auth setup
 - AI
   - Get key

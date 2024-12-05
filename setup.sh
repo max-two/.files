@@ -9,6 +9,7 @@ brew install rcmdnk/file/brew-file
 stow brewfile
 stow zsh
 stow p10k
+stow git
 
 # Install the rest of the packages
 brew file install
