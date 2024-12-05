@@ -32,6 +32,8 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Make man pages colorful
 alias rc='source $HOME/.zshrc'
 alias zshrc='zed $HOME/.zshrc'
 alias g='git'
+alias ls='eza --color --icons --all --group-directories-first'
+alias ll='eza --long --header --time-style=relative --no-filesize  --tree --level=2 --color --icons --all --group-directories-first'
 alias z='zed'
 alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
 alias cat='bat'
