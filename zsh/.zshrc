@@ -57,6 +57,7 @@ bindkey "^[[B" history-search-forward
 setopt autocd # cd without typing cd
 setopt auto_pushd # Put cd history onto stack
 setopt pushd_ignore_dups # Ignore duplicates for cd stack
+setopt pushd_silent # Don't print stack after popd
 
 # History
 HISTSIZE=9999
@@ -114,20 +115,20 @@ eval "$(zoxide init --cmd cd zsh)"
 # direnv
 eval "$(direnv hook zsh)"
 
+# Wrap homebrew with brewfile
+if [ -f $(brew --prefix)/etc/brew-wrap ];then
+  source $(brew --prefix)/etc/brew-wrap
+fi
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Other
+# Functions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Auto ls after changing directory
 function chpwd() {
     ls
 }
-
-# Wrap homebrew with brewfile
-if [ -f $(brew --prefix)/etc/brew-wrap ];then
-  source $(brew --prefix)/etc/brew-wrap
-fi
 
 # Colored git diff with bat
 diff() {
