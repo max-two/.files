@@ -15,12 +15,12 @@ chmod +x setup.sh
 ```
 
 ## TODO
-- Configure zed
-- Save zed settings here
+- Zed
+  - Configure
+    - Add some padding to bottom of terminal
+  - Save zed settings here
 - git config
 - Auto github auth setup
-- Prompt at bottom always
-  - Add a little padding below the prompt too
 - AI
   - Get key
   - Raycast
@@ -31,3 +31,4 @@ chmod +x setup.sh
   - Sync?
 - [Aerospace](https://github.com/nikitabobko/AeroSpace) - [Video guide](https://www.youtube.com/watch?v=5nwnJjr5eOo)
 - [Sketchy Bar](https://felixkratz.github.io/SketchyBar/)
+- Speed up zsh by reading resources [here](https://getantibody.github.io/)
