@@ -17,7 +17,6 @@ chmod +x setup.sh
 ## TODO
 - Configure zed
 - Save zed settings here
-- Set zed as default editor
 - git config
 - Auto github auth setup
 - Prompt at bottom always

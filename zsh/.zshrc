@@ -26,6 +26,9 @@ export HOMEBREW_BREWFILE_APPSTORE=0 # Exclude AppStore apps from brewfile
 # Bat
 export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Make man pages colorful
 
+# Zed as default editor
+export EDITOR="zed --wait"
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Aliases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
