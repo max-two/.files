@@ -8,6 +8,7 @@ brew direnv
 brew eza
 brew fnm
 brew fzf
+brew gleam
 brew stow
 brew zoxide
 
