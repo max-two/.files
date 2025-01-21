@@ -16,6 +16,7 @@ tap homebrew/cask
 cask arc
 cask font-caskaydia-cove-nerd-font
 cask font-meslo-for-powerlevel10k
+cask obsidian
 cask raycast
 cask zed
 cask zen-browser
