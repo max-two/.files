@@ -93,11 +93,11 @@ if [ $? -eq 0 ] && [ -d "$brew_completion" ];then
   fpath=($brew_completion $fpath)
 fi
 
-# fnm
-eval "$(fnm completions --shell zsh)"
-
 # Initialize completions
 autoload -Uz compinit && compinit
+
+# fnm
+eval "$(fnm completions --shell zsh)"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
