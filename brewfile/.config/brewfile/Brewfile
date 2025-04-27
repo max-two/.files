@@ -10,12 +10,14 @@ brew fnm
 brew fzf
 brew gleam
 brew stow
+brew uv
 brew zoxide
 
 tap homebrew/cask
 cask arc
 cask font-caskaydia-cove-nerd-font
 cask font-meslo-for-powerlevel10k
+cask iterm2
 cask obsidian
 cask raycast
 cask zed
