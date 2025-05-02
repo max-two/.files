@@ -9,13 +9,22 @@
     ui = auto
 
 [alias]
-    a = add --all
-    b = branch
-    c = checkout
+    ad = add --all
     cm = commit -m
-    p = push
-    s = status
-
+    sw = switch
+	cb = switch -c
+    db = branch -d
+    st = stash
+    sh = push
+    ll = pull
+    st = status
+    lg = log
+	rs = restore
+	unstage = restore --staged
+    mm = "!git stash push -u && git fetch origin master && git merge origin/master"
+    nb = "!git add --all && git commit -m 'WIP: nb' && git switch master && git pull && git switch -c"
+	nuke = "!git restore --staged . && git restore . && git clean -fd"
+	
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
