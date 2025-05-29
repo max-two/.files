@@ -15,6 +15,9 @@ fi
 # Exports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Path
+export PATH="$HOME/code/scripts:$PATH"
+
 # Homebrew
 export HOMEBREW_NO_ANALYTICS=1 # Turn off analytics
 export HOMEBREW_NO_ENV_HINTS=1 # Turn off hints
