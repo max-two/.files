@@ -21,6 +21,7 @@
     lg = log
 	rs = restore
 	unstage = restore --staged
+    undo = reset --soft HEAD~1
     mm = "!git stash push -u && git fetch origin master && git merge origin/master"
     nb = "!git add --all && git commit -m 'WIP: nb'; git switch master && git pull && git switch -c"
 	nuke = "!git restore --staged . && git restore . && git clean -fd"
