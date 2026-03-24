@@ -17,6 +17,8 @@ fi
 
 # Path
 export PATH="$HOME/code/scripts:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$(brew --prefix python@3.13)/libexec/bin:$PATH"
 
 # Homebrew
 export HOMEBREW_NO_ANALYTICS=1 # Turn off analytics
@@ -32,6 +34,10 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Make man pages colorful
 # Zed as default editor
 export EDITOR="hx"
 
+# LSP
+export ENABLE_LSP_TOOL=1
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Aliases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,6 +50,7 @@ alias z='zed'
 alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
 alias cat='bat'
 alias ...='popd'
+alias claude-logs='tail -f ~/.claude/logs/session_$(cat ~/.claude/logs/.current_session).log'
 alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
