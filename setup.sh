@@ -10,6 +10,7 @@ stow brewfile
 stow zsh
 stow p10k
 stow git
+stow emacs
 
 # Install the rest of the packages
 brew file install
