@@ -118,9 +118,6 @@ antidote load
 # fzf
 eval "$(fzf --zsh)"
 
-# zoxide (overrides cd command)
-eval "$(zoxide init --cmd cd zsh)"
-
 # direnv
 eval "$(direnv hook zsh)"
 
@@ -139,10 +136,22 @@ fi
 
 # Auto ls after changing directory
 function chpwd() {
-    ls
+    [[ -o interactive ]] && ls
 }
 
 # Colored git diff with bat
 diff() {
     git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Local
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source $HOME/.localrc
+
+# zoxide (must be last — overrides cd command and chpwd hook)
+if [[ -o interactive ]]; then
+  eval "$(zoxide init --cmd cd zsh)"
+fi
