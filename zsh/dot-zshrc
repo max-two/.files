@@ -21,20 +21,15 @@ typeset -gx _P9K_SSH_TTY=$TTY
 export PATH="$HOME/code/scripts:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 BREW_PREFIX=$(brew --prefix)
-export PATH="$BREW_PREFIX/opt/python@3.13/libexec/bin:$PATH"
 
 # Homebrew
 export HOMEBREW_NO_ANALYTICS=1 # Turn off analytics
 export HOMEBREW_NO_ENV_HINTS=1 # Turn off hints
 
-# Brewfile
-export HOMEBREW_BREWFILE_LEAVES=1 # Exclude dependencies from brewfile
-export HOMEBREW_BREWFILE_APPSTORE=0 # Exclude AppStore apps from brewfile
-
 # Bat
 export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Make man pages colorful
 
-# Zed as default editor
+# Default editor
 export EDITOR="hx"
 
 # LSP
@@ -45,10 +40,10 @@ export ENABLE_LSP_TOOL=1
 # Aliases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 alias rc='source $HOME/.zshrc'
-alias zshrc='zed $HOME/.zshrc'
+alias zshrc='hx $HOME/.zshrc'
 alias g='git'
 alias ls='eza --color --icons --all --group-directories-first'
-alias ll='eza --long --header --time-style=relative --no-filesize  --tree --level=2 --color --icons --all --group-directories-first'
+alias ll='eza --long --header --time-style=relative --no-filesize --tree --level=2 --color --icons --all --group-directories-first'
 alias z='zed'
 alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
 alias cat='bat'
@@ -85,7 +80,6 @@ setopt sharehistory
 setopt hist_ignore_space
 setopt hist_ignore_all_dups
 setopt hist_save_no_dups
-setopt hist_ignore_dups
 setopt hist_find_no_dups
 
 
@@ -156,7 +150,7 @@ function chpwd() {
 }
 
 # Colored git diff with bat
-diff() {
+gdiff() {
     git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
 
