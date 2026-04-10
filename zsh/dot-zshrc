@@ -18,7 +18,8 @@ fi
 # Path
 export PATH="$HOME/code/scripts:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="$(brew --prefix python@3.13)/libexec/bin:$PATH"
+BREW_PREFIX=$(brew --prefix)
+export PATH="$BREW_PREFIX/opt/python@3.13/libexec/bin:$PATH"
 
 # Homebrew
 export HOMEBREW_NO_ANALYTICS=1 # Turn off analytics
@@ -87,6 +88,13 @@ setopt hist_find_no_dups
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Helpers
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source $HOME/.zsh_cached_eval.zsh
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Completions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -98,23 +106,28 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 -a --color=always $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 -a --color=always $realpath' # Show fzf directory previews for zoxide
 
 # Brewfile
-brew_completion=$(brew --prefix 2>/dev/null)/share/zsh/zsh-site-functions
-if [ $? -eq 0 ] && [ -d "$brew_completion" ];then
+brew_completion=$BREW_PREFIX/share/zsh/zsh-site-functions
+if [ -d "$brew_completion" ];then
   fpath=($brew_completion $fpath)
 fi
 
-# Initialize completions
-autoload -Uz compinit && compinit
+# Initialize completions (full rebuild once per day, skip security check otherwise)
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
 
 # fnm
-eval "$(fnm completions --shell zsh)"
+_cached_eval fnm-completions fnm completions --shell zsh
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Antidote
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
+source $BREW_PREFIX/opt/antidote/share/antidote/antidote.zsh
 antidote load
 
 
@@ -123,10 +136,10 @@ antidote load
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # fzf
-eval "$(fzf --zsh)"
+_cached_eval fzf fzf --zsh
 
 # direnv
-eval "$(direnv hook zsh)"
+_cached_eval direnv direnv hook zsh
 
 # fnm
 eval "$(fnm env --shell zsh --use-on-cd --version-file-strategy=recursive --resolve-engines=false)"
@@ -156,5 +169,5 @@ source $HOME/.localrc
 
 # zoxide (must be last — overrides cd command and chpwd hook)
 if [[ -o interactive ]]; then
-  eval "$(zoxide init --cmd cd zsh)"
+  _cached_eval zoxide zoxide init --cmd cd zsh
 fi
