@@ -31,12 +31,10 @@ Since everything is symlinked, editing files in this repo directly changes the a
 ```
 .files/
 ├── brewfile/           # ~/.config/brewfile/Brewfile (Homebrew packages)
-├── emacs/              # ~/.emacs.d/init.el (Emacs configuration)
 ├── ghostty/            # ~/.config/ghostty/config.ghostty
 ├── git/                # ~/.gitconfig
 ├── p10k/               # ~/.p10k.zsh (Powerlevel10k prompt theme)
 ├── zsh/                # ~/.zshrc and ~/.zsh_plugins.txt
-├── .gitignore          # Ignores editor temp/backup files
 ├── .stowrc             # Stow config: --dotfiles --target=~
 └── setup.sh            # Full machine setup script
 ```

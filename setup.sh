@@ -10,7 +10,6 @@ stow brewfile
 stow zsh
 stow p10k
 stow git
-stow emacs
 stow ghostty
 
 # Install the rest of the packages
