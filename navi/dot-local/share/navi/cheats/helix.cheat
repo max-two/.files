@@ -1,0 +1,187 @@
+% helix
+
+# Normal mode (from insert)
+Esc
+
+# Insert before cursor
+i
+
+# Append after cursor
+a
+
+# Insert at line start
+I
+
+# Append at line end
+A
+
+# Open line below
+o
+
+# Open line above
+O
+
+# Move left/down/up/right
+h / j / k / l
+
+# Move to next/prev word
+w / b
+
+# Move to end of word
+e
+
+# Go to line start
+Home / gh
+
+# Go to line end
+End / gl
+
+# Go to first line
+gg
+
+# Go to last line
+ge
+
+# Go to line number
+<number>gg
+
+# Page up / down
+Ctrl+u / Ctrl+d
+
+# Half page up / down
+Ctrl+b / Ctrl+f
+
+# Find character forward / backward
+f<char> / F<char>
+
+# Find till character forward / backward
+t<char> / T<char>
+
+# Select line
+x
+
+# Extend selection down
+x (repeat)
+
+# Select all
+%
+
+# Delete selection
+d
+
+# Change selection (delete + insert)
+c
+
+# Yank (copy)
+y
+
+# Paste after / before
+p / P
+
+# Undo / redo
+u / U
+
+# Search forward
+/
+
+# Search backward
+?
+
+# Next / prev search match
+n / N
+
+# Select all search matches
+* (on selection)
+
+# Split selection on regex
+S
+
+# Keep selections matching regex
+K (pipe)
+
+# File picker
+Space+f
+
+# Buffer picker
+Space+b
+
+# Symbol picker
+Space+s
+
+# Global search
+Space+/
+
+# Command palette
+:
+
+# Save file
+:w
+
+# Quit
+:q
+
+# Save and quit
+:wq
+
+# Open file
+:o <path>
+
+# Go to definition
+gd
+
+# Go to references
+gr
+
+# Go to implementation
+gi
+
+# Go to type definition
+gy
+
+# Hover docs
+Space+k
+
+# Rename symbol
+Space+r
+
+# Code action
+Space+a
+
+# Format document
+Space+f (or :format)
+
+# Diagnostics picker
+Space+d
+
+# Toggle comment
+Ctrl+c
+
+# Indent / dedent
+> / <
+
+# Join lines
+J
+
+# Match bracket
+mm
+
+# Select inside pair (e.g. quotes, parens)
+mi<char>
+
+# Select around pair
+ma<char>
+
+# Split view right
+Ctrl+w, v
+
+# Split view down
+Ctrl+w, s
+
+# Navigate splits
+Ctrl+w, h/j/k/l
+
+# Close split
+Ctrl+w, q
+
+# Swap split
+Ctrl+w, H/J/K/L
