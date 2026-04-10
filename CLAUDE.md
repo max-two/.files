@@ -11,7 +11,7 @@ The `--dotfiles` flag in `.stowrc` means files named `dot-*` become `.*` when sy
 - `zsh/dot-zshrc` → `~/.zshrc`
 - `git/dot-gitconfig` → `~/.gitconfig`
 - `p10k/dot-p10k.zsh` → `~/.p10k.zsh`
-- `brewfile/.config/brewfile/Brewfile` → `~/.config/brewfile/Brewfile`
+- `brewfile/dot-config/brewfile/Brewfile` → `~/.config/brewfile/Brewfile`
 
 To add a new config:
 
@@ -31,7 +31,7 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - Detailed topics (tree folding, conflicts, ignore lists): `/opt/homebrew/share/doc/stow/manual-split/`
 
 - **Homebrew** — Package manager.
-  - Config: `brewfile/.config/brewfile/Brewfile`
+  - Config: `brewfile/dot-config/brewfile/Brewfile`
   - Man page: `/opt/homebrew/share/man/man1/brew.1`
   - Extended docs: `/opt/homebrew/share/doc/homebrew/`
 
