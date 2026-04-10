@@ -8,9 +8,10 @@ scrollback_editor "none"
 // Keybinds
 keybinds {
     shared_except "locked" {
-        bind "Alt ?" {
+        bind "Ctrl /" {
             Run "navi" "--print" {
                 floating true
+                close_on_exit true
             }
         }
     }
