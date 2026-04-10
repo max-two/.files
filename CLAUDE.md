@@ -77,6 +77,7 @@ Skip steps that don't apply (e.g. no stow package needed for a tool with no conf
 
 ## Things to Know
 
+- Zellij autostart **must** stay at the very top of `.zshrc` (before p10k instant prompt) — it launches zellij and exits the outer shell, so nothing after it runs in that shell.
 - The `.zshrc` sources `~/.localrc` at the end for machine-specific config that shouldn't be committed.
 - `zoxide` init **must** stay last in `.zshrc` — it overrides `cd` and the `chpwd` hook.
 - P10k instant prompt **must** stay at the top of `.zshrc`.
