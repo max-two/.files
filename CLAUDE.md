@@ -32,6 +32,7 @@ Since everything is symlinked, editing files in this repo directly changes the a
 .files/
 ├── brewfile/           # ~/.config/brewfile/Brewfile (Homebrew packages)
 ├── emacs/              # ~/.emacs.d/init.el (Emacs configuration)
+├── ghostty/            # ~/.config/ghostty/config.ghostty
 ├── git/                # ~/.gitconfig
 ├── p10k/               # ~/.p10k.zsh (Powerlevel10k prompt theme)
 ├── zsh/                # ~/.zshrc and ~/.zsh_plugins.txt
@@ -55,3 +56,9 @@ Since everything is symlinked, editing files in this repo directly changes the a
 - Plugin order in `dot-zsh_plugins.txt` matters: `fzf-tab` before `autosuggestions`.
 - The `HOMEBREW_BREWFILE_LEAVES=1` export means the Brewfile only tracks top-level packages, not dependencies.
 - The git config uses `master` as the default branch name.
+
+## Tool Documentation
+
+When editing configuration for any of these tools, read the relevant docs before making changes. Don't guess at option names or values.
+
+- **Ghostty** — Terminal emulator. Config reference and all options: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.5.md`. CLI actions and flags: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.1.md`. To check a specific option's current default: `ghostty +show-config --default --docs`.
