@@ -1,3 +1,7 @@
 font-family = CaskaydiaCove Nerd Font Mono
 font-size = 15
 theme = Everforest Dark Hard
+
+# Don't pass Cmd+C to terminal when no Ghostty selection exists (avoids
+# stray 'c' input when copying Zellij-managed selections)
+keybind = super+c=copy_to_clipboard
