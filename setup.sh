@@ -11,6 +11,7 @@ stow zsh
 stow p10k
 stow git
 stow ghostty
+stow zellij
 
 # Install the rest of the packages
 brew file install

@@ -1,0 +1,9 @@
+// Zellij configuration
+// Full default config: zellij setup --dump-config
+// Docs: https://zellij.dev/documentation/
+
+// Use Ghostty's native scrollback instead of zellij's
+scrollback_editor "none"
+
+// Theme
+theme "catppuccin-mocha"

@@ -50,6 +50,11 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - CLI actions: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.1.md`
   - Check a specific option's default: `ghostty +show-config --default --docs`
 
+- **Zellij** — Terminal multiplexer.
+  - Config: `zellij/dot-config/zellij/config.kdl`
+  - No man page — use `zellij --help` and `zellij setup --dump-config` for the full default config
+  - Completions: `/opt/homebrew/share/zsh/site-functions/_zellij`
+
 ## Adding a New Tool
 
 Checklist when adding a new CLI tool or app to this setup:
