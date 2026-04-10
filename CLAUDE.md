@@ -35,7 +35,7 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - Man page: `/opt/homebrew/share/man/man1/brew.1`
   - Extended docs: `/opt/homebrew/share/doc/homebrew/`
 
-- **homebrew-file** (`brew-file`) — Keeps the Brewfile in sync when you `brew install`/`brew uninstall`. The `.zshrc` sources `brew-wrap` to enable this.
+- **homebrew-file** (`brew-file`) — Used for `brew file install` on a fresh machine. The Brewfile is manually curated.
   - No local docs — run `brew file help` for usage.
 
 - **Antidote** — Zsh plugin manager.
