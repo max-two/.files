@@ -60,4 +60,5 @@ Since everything is symlinked, editing files in this repo directly changes the a
 When editing configuration for any of these tools, read the relevant docs before making changes. Don't guess at option names or values.
 
 - **GNU Stow** — Symlink farm manager. Man page (flags and options): `/opt/homebrew/share/man/man8/stow.8`. Detailed topics (tree folding, conflicts, ignore lists): `/opt/homebrew/share/doc/stow/manual-split/`.
+- **Powerlevel10k** — Zsh prompt theme. The config file (`p10k/dot-p10k.zsh`) is heavily commented and serves as its own documentation — read it directly for available options and valid values.
 - **Ghostty** — Terminal emulator. Config reference and all options: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.5.md`. CLI actions and flags: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.1.md`. To check a specific option's current default: `ghostty +show-config --default --docs`.
