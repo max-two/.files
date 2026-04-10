@@ -50,6 +50,12 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - CLI actions: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.1.md`
   - Check a specific option's default: `ghostty +show-config --default --docs`
 
+- **navi** — Interactive cheatsheet tool for the terminal.
+  - Config: `navi/dot-config/navi/config.yaml`
+  - Cheats: `navi/dot-local/share/navi/cheats/` (one `.cheat` file per tool)
+  - No man page — use `navi --help`
+  - Bound to `Alt+?` in Zellij as a floating pane
+
 - **Zellij** — Terminal multiplexer.
   - Config: `zellij/dot-config/zellij/config.kdl`
   - No man page — use `zellij --help` and `zellij setup --dump-config` for the full default config

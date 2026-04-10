@@ -5,5 +5,32 @@
 // Use Ghostty's native scrollback instead of zellij's
 scrollback_editor "none"
 
-// Theme
-theme "catppuccin-mocha"
+// Keybinds
+keybinds {
+    shared_except "locked" {
+        bind "Alt ?" {
+            Run "navi" "--print" {
+                floating true
+            }
+        }
+    }
+}
+
+// Theme — matches Ghostty's "Everforest Dark Hard"
+theme "everforest-dark"
+
+themes {
+    everforest-dark {
+        fg 211 198 170      // #d3c6aa
+        bg 30 35 38         // #1e2326
+        black 122 132 120   // #7a8478
+        white 242 239 223   // #f2efdf
+        red 230 126 128     // #e67e80
+        green 167 192 128   // #a7c080
+        yellow 219 188 127  // #dbbc7f
+        blue 127 187 179    // #7fbbb3
+        magenta 214 153 182 // #d699b6
+        orange 230 152 117  // #e69875
+        cyan 131 192 146    // #83c092
+    }
+}

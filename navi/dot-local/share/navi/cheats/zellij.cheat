@@ -1,0 +1,61 @@
+% zellij
+
+# New pane (right)
+Ctrl+p, n
+
+# New pane (down)
+Ctrl+p, d
+
+# New pane (floating)
+Ctrl+p, w
+
+# Close focused pane
+Ctrl+p, x
+
+# Toggle fullscreen
+Ctrl+p, f
+
+# Toggle floating panes
+Ctrl+p, w
+
+# Move focus left
+Ctrl+p, h
+
+# Move focus down
+Ctrl+p, j
+
+# Move focus up
+Ctrl+p, k
+
+# Move focus right
+Ctrl+p, l
+
+# New tab
+Ctrl+t, n
+
+# Close tab
+Ctrl+t, x
+
+# Go to next tab
+Ctrl+t, l
+
+# Go to previous tab
+Ctrl+t, h
+
+# Go to tab by number
+Ctrl+t, <1-9>
+
+# Rename tab
+Ctrl+t, r
+
+# Enter scroll mode
+Ctrl+s
+
+# Search in scroll mode
+Ctrl+s, s
+
+# Enter resize mode
+Ctrl+n
+
+# Lock mode (pass keys through)
+Ctrl+g

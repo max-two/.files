@@ -1,0 +1,43 @@
+% ghostty
+
+# New window
+Cmd+n
+
+# New tab
+Cmd+t
+
+# Close tab/window
+Cmd+w
+
+# Next tab
+Cmd+Shift+]
+
+# Previous tab
+Cmd+Shift+[
+
+# Split right
+Cmd+d
+
+# Split down
+Cmd+Shift+d
+
+# Navigate splits
+Cmd+Alt+Arrow
+
+# Increase font size
+Cmd++
+
+# Decrease font size
+Cmd+-
+
+# Reset font size
+Cmd+0
+
+# Toggle fullscreen
+Cmd+Enter
+
+# Open config
+Cmd+,
+
+# Reload config
+Cmd+Shift+,
