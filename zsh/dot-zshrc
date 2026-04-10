@@ -8,6 +8,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # P10K
+typeset -gix P9K_SSH=0        # Skip SSH detection (not needed on local machine)
+typeset -gx _P9K_SSH_TTY=$TTY
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 
@@ -113,11 +115,9 @@ fi
 
 # Initialize completions (full rebuild once per day, skip security check otherwise)
 autoload -Uz compinit
-if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-  compinit
-else
-  compinit -C
-fi
+() {
+  if [[ $# -gt 0 ]]; then compinit; else compinit -C; fi
+} ~/.zcompdump(N.mh+24)
 
 # fnm
 _cached_eval fnm-completions fnm completions --shell zsh
