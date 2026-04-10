@@ -50,6 +50,26 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - CLI actions: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.1.md`
   - Check a specific option's default: `ghostty +show-config --default --docs`
 
+## Adding a New Tool
+
+Checklist when adding a new CLI tool or app to this setup:
+
+1. **Install** — `brew install <name>` (or `brew install --cask <name>` for GUI apps)
+2. **Brewfile** — Add the entry to `brewfile/.config/brewfile/Brewfile` in alphabetical order under the correct tap/section
+3. **Stow package** — If the tool has config files, create a stow package:
+   - Create `<name>/` at the repo root, mirroring the path structure relative to `~`
+   - Use `dot-` prefix for dotfiles (e.g. `dot-config` becomes `.config`)
+   - Add `stow <name>` to `setup.sh` (alphabetical within the stow block)
+   - Run `stow <name>` to create the symlinks
+4. **Local docs** — Find local documentation and add it to the Tools section below:
+   - Check for man pages: `man -w <name>` (gives the path if one exists)
+   - Check for bundled docs: look in `/opt/homebrew/share/doc/<name>/`, the app bundle, or run `<name> --help`
+   - Check for completions: `ls /opt/homebrew/share/zsh/site-functions/_<name>`
+5. **Tools entry** — Add an entry to the **Tools** section in this file with: a short description, config path (if stow-managed), and local doc paths found above
+6. **Things to Know** — If the tool has ordering constraints, gotchas, or interactions with other tools, add a bullet to the **Things to Know** section
+
+Skip steps that don't apply (e.g. no stow package needed for a tool with no config).
+
 ## Things to Know
 
 - The `.zshrc` sources `~/.localrc` at the end for machine-specific config that shouldn't be committed.
