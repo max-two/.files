@@ -146,7 +146,7 @@ _cached_eval fzf fzf --zsh
 _cached_eval direnv direnv hook zsh
 
 # fnm
-eval "$(fnm env --shell zsh --use-on-cd --version-file-strategy=recursive --resolve-engines=false)"
+eval "$(fnm env --shell zsh --use-on-cd --version-file-strategy=recursive --resolve-engines=false --log-level=quiet)"
 
 
 
