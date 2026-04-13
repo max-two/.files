@@ -26,9 +26,7 @@ typeset -gx _P9K_SSH_TTY=$TTY
 # Exports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Path
-export PATH="$HOME/code/scripts:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
+# Path (base PATH additions are in .zshenv so non-interactive shells get them too)
 BREW_PREFIX=$(brew --prefix)
 
 # Homebrew

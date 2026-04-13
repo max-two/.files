@@ -1,0 +1,4 @@
+# Path additions that should be available to all zsh invocations
+# (including non-interactive, e.g. Zellij command panes)
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/code/scripts:$PATH"
