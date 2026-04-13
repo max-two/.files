@@ -35,3 +35,5 @@ themes {
         cyan 131 192 146    // #83c092
     }
 }
+
+show_startup_tips false

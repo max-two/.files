@@ -1,0 +1,21 @@
+layout {
+    cwd "/Users/max.mckinley/code/.files"
+
+    pane size=1 borderless=true {
+        plugin location="tab-bar"
+    }
+
+    pane split_direction="vertical" {
+        pane command="claude" size="50%" focus=true
+        pane stacked=true size="50%" {
+            pane command="hx" focus=true {
+                args "README.md"
+            }
+            pane name="terminal"
+        }
+    }
+
+    pane size=1 borderless=true {
+        plugin location="status-bar"
+    }
+}
