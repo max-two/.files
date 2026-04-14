@@ -151,6 +151,9 @@ chosen=$(echo "$selection" | sed -n '2p')
 meta=$(echo "$chosen" | cut -f2)
 IFS=: read -r type name path <<< "$meta"
 
+on_startup=false
+echo "$tabs" | grep -qxF "__startup__" && on_startup=true
+
 case "$type" in
     tab|wt)
         zellij action go-to-tab-name "$name"
@@ -159,3 +162,9 @@ case "$type" in
         zellij action new-tab --layout worktree --name "$name" --cwd "$path"
         ;;
 esac
+
+# Clean up the startup tab if it exists
+if [ "$on_startup" = true ]; then
+    zellij action go-to-tab-name "__startup__" 2>/dev/null
+    zellij action close-tab 2>/dev/null
+fi

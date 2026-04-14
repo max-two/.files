@@ -8,7 +8,7 @@ layout {
             plugin location="status-bar"
         }
     }
-    tab {
+    tab name="__startup__" {
         pane
         floating_panes {
             pane command="workspace-switcher" close_on_exit=true
