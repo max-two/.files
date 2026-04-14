@@ -6,6 +6,7 @@
 #   [tab]  — plain Zellij tab (no worktree)
 #   [wt]   — worktree with an active Zellij tab
 #   [wt+]  — worktree that exists but has no tab open
+#   [repo] — regular repo with no tab open
 #
 # Keybinds:
 #   enter  — switch to tab (creates tab for [wt+] entries)
@@ -25,69 +26,64 @@ done
 # Get all Zellij tab names (one per line)
 tabs=$(zellij action query-tab-names 2>/dev/null)
 
-# Get all worktrees across bare repos under ~/code/
-# Uses git directly instead of wt list for speed (~25ms vs ~1s per repo)
-worktrees=""
-for dir in ~/code/*/; do
-    [ -f "$dir/.git" ] && grep -q "gitdir.*bare" "$dir/.git" 2>/dev/null || continue
-    repo=$(basename "$dir")
-
-    # Find a worktree to run git from
-    wt_dir=""
-    for sub in "$dir"*/; do
-        [ -f "$sub/.git" ] 2>/dev/null || [ -d "$sub/.git" ] 2>/dev/null || continue
-        wt_dir="$sub"
-        break
-    done
-    [ -z "$wt_dir" ] && continue
-
-    # Parse git worktree list --porcelain output
-    current_path=""
-    while IFS= read -r line; do
-        case "$line" in
-            "worktree "*)
-                current_path="${line#worktree }"
-                ;;
-            "branch "*)
-                branch="${line#branch refs/heads/}"
-                sanitized=$(echo "$branch" | tr '/\\' '--')
-                tab_name="$repo / $sanitized"
-                worktrees+="$repo"$'\t'"$branch"$'\t'"$current_path"$'\t'"$tab_name"$'\n'
-                ;;
-            bare)
-                current_path=""
-                ;;
-        esac
-    done < <(git -C "$wt_dir" worktree list --porcelain 2>/dev/null)
-done
-
-# --- Build fzf entries ---
+# --- Scan ~/code/ and build fzf entries in one pass ---
 # Format: "label  display_name\tmetadata"
 # metadata is hidden from display but available to the action handler
 
 entries=""
+declare -A known_tab_names
+shopt -s dotglob
 
-# Track which tab names are worktree tabs
-declare -A wt_tab_names
-while IFS=$'\t' read -r repo branch path tab_name; do
-    [ -z "$repo" ] && continue
-    wt_tab_names["$tab_name"]=1
-done <<< "$worktrees"
+for dir in ~/code/*/; do
+    repo=$(basename "$dir")
 
-# Add worktree entries
-while IFS=$'\t' read -r repo branch path tab_name; do
-    [ -z "$repo" ] && continue
-    if echo "$tabs" | grep -qxF "$tab_name"; then
-        entries+="[wt]  $tab_name"$'\t'"wt:$tab_name:$path"$'\n'
-    else
-        entries+="[wt+] $tab_name"$'\t'"wt+:$tab_name:$path"$'\n'
+    if [ -f "$dir/.git" ] && grep -q "gitdir.*bare" "$dir/.git" 2>/dev/null; then
+        # Bare repo — find a worktree to run git from, then list all worktrees
+        wt_dir=""
+        for sub in "$dir"*/; do
+            [ -f "$sub/.git" ] 2>/dev/null || [ -d "$sub/.git" ] 2>/dev/null || continue
+            wt_dir="$sub"
+            break
+        done
+        [ -z "$wt_dir" ] && continue
+
+        current_path=""
+        while IFS= read -r line; do
+            case "$line" in
+                "worktree "*)
+                    current_path="${line#worktree }"
+                    ;;
+                "branch "*)
+                    branch="${line#branch refs/heads/}"
+                    tab_name="$repo / $(echo "$branch" | tr '/\\' '--')"
+                    known_tab_names["$tab_name"]=1
+                    if echo "$tabs" | grep -qxF "$tab_name"; then
+                        entries+="[wt]  $tab_name"$'\t'"wt:$tab_name:$current_path"$'\n'
+                    else
+                        entries+="[wt+] $tab_name"$'\t'"wt+:$tab_name:$current_path"$'\n'
+                    fi
+                    ;;
+                bare)
+                    current_path=""
+                    ;;
+            esac
+        done < <(git -C "$wt_dir" worktree list --porcelain 2>/dev/null)
+
+    elif [ -d "$dir/.git" ]; then
+        # Regular repo
+        known_tab_names["$repo"]=1
+        if echo "$tabs" | grep -qxF "$repo"; then
+            entries+="[tab] $repo"$'\t'"tab:$repo:"$'\n'
+        else
+            entries+="[repo] $repo"$'\t'"repo:$repo:$dir"$'\n'
+        fi
     fi
-done <<< "$worktrees"
+done
 
-# Add plain tab entries (tabs that aren't worktree tabs)
+# Add remaining tabs that don't match any repo or worktree
 while IFS= read -r tab; do
     [ -z "$tab" ] && continue
-    if [ -z "${wt_tab_names[$tab]+x}" ]; then
+    if [ -z "${known_tab_names[$tab]+x}" ]; then
         entries+="[tab] $tab"$'\t'"tab:$tab:"$'\n'
     fi
 done <<< "$tabs"
@@ -156,7 +152,7 @@ case "$type" in
     tab|wt)
         zellij action go-to-tab-name "$name"
         ;;
-    wt+)
+    wt+|repo)
         zellij action new-tab --layout worktree --name "$name" --cwd "$path"
         ;;
 esac
