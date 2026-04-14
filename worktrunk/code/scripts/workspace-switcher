@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Unified workspace switcher for Zellij + worktrunk.
 # Shows all Zellij tabs and all worktrees across repos in a single fzf picker.
 #
@@ -11,7 +11,14 @@
 #   enter  — switch to tab (creates tab for [wt+] entries)
 #   ctrl-d — close tab / remove worktree
 
-[ -z "$ZELLIJ" ] && echo "Not inside Zellij" && exit 1
+dry_run=false
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) dry_run=true ;;
+    esac
+done
+
+[ "$dry_run" = false ] && [ -z "$ZELLIJ" ] && echo "Not inside Zellij" && exit 1
 
 # --- Gather data ---
 
@@ -19,24 +26,39 @@
 tabs=$(zellij action query-tab-names 2>/dev/null)
 
 # Get all worktrees across bare repos under ~/code/
-# Output: repo_name<TAB>branch<TAB>path<TAB>tab_name
+# Uses git directly instead of wt list for speed (~25ms vs ~1s per repo)
 worktrees=""
 for dir in ~/code/*/; do
     [ -f "$dir/.git" ] && grep -q "gitdir.*bare" "$dir/.git" 2>/dev/null || continue
     repo=$(basename "$dir")
 
-    # Find a worktree to run wt from (first directory that isn't .bare)
+    # Find a worktree to run git from
     wt_dir=""
     for sub in "$dir"*/; do
-        [ -d "$sub/.git" ] 2>/dev/null || [ -f "$sub/.git" ] 2>/dev/null || continue
+        [ -f "$sub/.git" ] 2>/dev/null || [ -d "$sub/.git" ] 2>/dev/null || continue
         wt_dir="$sub"
         break
     done
     [ -z "$wt_dir" ] && continue
 
-    wt_json=$(wt -C "$wt_dir" list --format=json 2>/dev/null) || continue
-    repo_worktrees=$(echo "$wt_json" | jq -r --arg repo "$repo" '.[] | "\($repo)\t\(.branch)\t\(.path)\t\($repo) / \(.branch | gsub("[/\\\\]"; "-"))"')
-    worktrees="${worktrees}${repo_worktrees}"$'\n'
+    # Parse git worktree list --porcelain output
+    current_path=""
+    while IFS= read -r line; do
+        case "$line" in
+            "worktree "*)
+                current_path="${line#worktree }"
+                ;;
+            "branch "*)
+                branch="${line#branch refs/heads/}"
+                sanitized=$(echo "$branch" | tr '/\\' '--')
+                tab_name="$repo / $sanitized"
+                worktrees+="$repo"$'\t'"$branch"$'\t'"$current_path"$'\t'"$tab_name"$'\n'
+                ;;
+            bare)
+                current_path=""
+                ;;
+        esac
+    done < <(git -C "$wt_dir" worktree list --porcelain 2>/dev/null)
 done
 
 # --- Build fzf entries ---
@@ -71,6 +93,13 @@ while IFS= read -r tab; do
 done <<< "$tabs"
 
 [ -z "$entries" ] && echo "No tabs or worktrees found" && exit 0
+
+if [ "$dry_run" = true ]; then
+    echo -n "$entries" | sort -t']' -k2 | while IFS=$'\t' read -r display meta; do
+        printf '%s\t%s\n' "$display" "$meta"
+    done
+    exit 0
+fi
 
 # --- Run fzf ---
 

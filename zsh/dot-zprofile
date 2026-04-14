@@ -1,0 +1,6 @@
+# Path additions — in .zprofile so they run after macOS path_helper
+# (/etc/zprofile), which reshuffles anything set in .zshenv.
+# Zellij command panes inherit PATH from the parent login shell.
+export PATH="/opt/homebrew/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/code/scripts:$PATH"
