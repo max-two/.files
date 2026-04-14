@@ -3,8 +3,6 @@ worktree-path = "{{ repo_path }}/../{{ branch | sanitize }}"
 [post-start]
 copy = "wt step copy-ignored"
 
-[post-switch]
-zellij = "wt-zellij-tab '{{ branch | sanitize }}' '{{ worktree_path }}'"
 
 # # User Configuration
 #

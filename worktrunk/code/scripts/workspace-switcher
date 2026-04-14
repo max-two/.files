@@ -1,0 +1,133 @@
+#!/bin/bash
+# Unified workspace switcher for Zellij + worktrunk.
+# Shows all Zellij tabs and all worktrees across repos in a single fzf picker.
+#
+# Entry types:
+#   [tab]  — plain Zellij tab (no worktree)
+#   [wt]   — worktree with an active Zellij tab
+#   [wt+]  — worktree that exists but has no tab open
+#
+# Keybinds:
+#   enter  — switch to tab (creates tab for [wt+] entries)
+#   ctrl-d — close tab / remove worktree
+
+[ -z "$ZELLIJ" ] && echo "Not inside Zellij" && exit 1
+
+# --- Gather data ---
+
+# Get all Zellij tab names (one per line)
+tabs=$(zellij action query-tab-names 2>/dev/null)
+
+# Get all worktrees across bare repos under ~/code/
+# Output: repo_name<TAB>branch<TAB>path<TAB>tab_name
+worktrees=""
+for dir in ~/code/*/; do
+    [ -f "$dir/.git" ] && grep -q "gitdir.*bare" "$dir/.git" 2>/dev/null || continue
+    repo=$(basename "$dir")
+
+    # Find a worktree to run wt from (first directory that isn't .bare)
+    wt_dir=""
+    for sub in "$dir"*/; do
+        [ -d "$sub/.git" ] 2>/dev/null || [ -f "$sub/.git" ] 2>/dev/null || continue
+        wt_dir="$sub"
+        break
+    done
+    [ -z "$wt_dir" ] && continue
+
+    wt_json=$(wt -C "$wt_dir" list --format=json 2>/dev/null) || continue
+    repo_worktrees=$(echo "$wt_json" | jq -r --arg repo "$repo" '.[] | "\($repo)\t\(.branch)\t\(.path)\t\($repo) / \(.branch | gsub("[/\\\\]"; "-"))"')
+    worktrees="${worktrees}${repo_worktrees}"$'\n'
+done
+
+# --- Build fzf entries ---
+# Format: "label  display_name\tmetadata"
+# metadata is hidden from display but available to the action handler
+
+entries=""
+
+# Track which tab names are worktree tabs
+declare -A wt_tab_names
+while IFS=$'\t' read -r repo branch path tab_name; do
+    [ -z "$repo" ] && continue
+    wt_tab_names["$tab_name"]=1
+done <<< "$worktrees"
+
+# Add worktree entries
+while IFS=$'\t' read -r repo branch path tab_name; do
+    [ -z "$repo" ] && continue
+    if echo "$tabs" | grep -qxF "$tab_name"; then
+        entries+="[wt]  $tab_name"$'\t'"wt:$tab_name:$path"$'\n'
+    else
+        entries+="[wt+] $tab_name"$'\t'"wt+:$tab_name:$path"$'\n'
+    fi
+done <<< "$worktrees"
+
+# Add plain tab entries (tabs that aren't worktree tabs)
+while IFS= read -r tab; do
+    [ -z "$tab" ] && continue
+    if [ -z "${wt_tab_names[$tab]+x}" ]; then
+        entries+="[tab] $tab"$'\t'"tab:$tab:"$'\n'
+    fi
+done <<< "$tabs"
+
+[ -z "$entries" ] && echo "No tabs or worktrees found" && exit 0
+
+# --- Run fzf ---
+
+selection=$(echo -n "$entries" | sort -t']' -k2 | fzf \
+    --ansi \
+    --no-multi \
+    --delimiter=$'\t' \
+    --with-nth=1 \
+    --prompt="workspace> " \
+    --header="enter: switch  ctrl-d: close/remove" \
+    --bind="ctrl-d:execute-silent(echo {2} > $TMPDIR/ws-switcher-delete)+abort" \
+    --expect=enter \
+)
+
+# Handle ctrl-d (delete)
+if [ -f "$TMPDIR/ws-switcher-delete" ]; then
+    delete_meta=$(cat "$TMPDIR/ws-switcher-delete")
+    rm -f "$TMPDIR/ws-switcher-delete"
+
+    IFS=: read -r type name path <<< "$delete_meta"
+    case "$type" in
+        tab)
+            # Can't close tabs via CLI easily — just inform
+            echo "Tab close not yet supported via Zellij CLI"
+            ;;
+        wt|wt+)
+            # Remove the worktree and close the tab if open
+            if [ -n "$path" ]; then
+                branch=$(git -C "$path" branch --show-current 2>/dev/null)
+                repo_bare=$(git -C "$path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.bare$||')
+                # Find any worktree in the repo to run wt from
+                for sub in "$repo_bare"/*/; do
+                    [ "$sub" = "$path/" ] && continue
+                    [ -f "$sub/.git" ] 2>/dev/null || [ -d "$sub/.git" ] 2>/dev/null || continue
+                    wt -C "$sub" remove "$branch" 2>/dev/null
+                    break
+                done
+            fi
+            ;;
+    esac
+    exit 0
+fi
+
+# Handle enter (switch)
+# fzf --expect outputs the key on line 1, the selection on line 2
+key=$(echo "$selection" | sed -n '1p')
+chosen=$(echo "$selection" | sed -n '2p')
+[ -z "$chosen" ] && exit 0
+
+meta=$(echo "$chosen" | cut -f2)
+IFS=: read -r type name path <<< "$meta"
+
+case "$type" in
+    tab|wt)
+        zellij action go-to-tab-name "$name"
+        ;;
+    wt+)
+        zellij action new-tab --layout worktree --name "$name" --cwd "$path"
+        ;;
+esac

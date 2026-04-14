@@ -1,12 +1,16 @@
 #!/bin/bash
 # Create or focus a Zellij tab for a worktrunk worktree.
 # Called from worktrunk post-switch hook:
-#   wt-zellij-tab <tab-name> <worktree-path>
+#   wt-zellij-tab <branch-sanitized> <worktree-path>
 
 [ -z "$ZELLIJ" ] && exit 0
 
-tab_name="$1"
+branch="$1"
 worktree_path="$2"
+
+# Derive repo name from the git toplevel of the worktree
+repo=$(basename "$(git -C "$worktree_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.bare$||; s|/\.git$||')")
+tab_name="$repo / $branch"
 
 # Check if a tab with this name already exists (go-to-tab-name always
 # returns exit 0 even when the tab doesn't exist — zellij-org/zellij#3860)
