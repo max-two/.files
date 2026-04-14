@@ -30,7 +30,9 @@ tabs=$(zellij action query-tab-names 2>/dev/null)
 # Format: "label  display_name\tmetadata"
 # metadata is hidden from display but available to the action handler
 
-entries=""
+wt_entries=""
+repo_entries=""
+tab_entries=""
 declare -A known_tab_names
 shopt -s dotglob
 
@@ -58,9 +60,9 @@ for dir in ~/code/*/; do
                     tab_name="$repo / $(echo "$branch" | tr '/\\' '--')"
                     known_tab_names["$tab_name"]=1
                     if echo "$tabs" | grep -qxF "$tab_name"; then
-                        entries+="[wt]  $tab_name"$'\t'"wt:$tab_name:$current_path"$'\n'
+                        wt_entries+="[wt]  $tab_name"$'\t'"wt:$tab_name:$current_path"$'\n'
                     else
-                        entries+="[wt+] $tab_name"$'\t'"wt+:$tab_name:$current_path"$'\n'
+                        wt_entries+="[wt+] $tab_name"$'\t'"wt+:$tab_name:$current_path"$'\n'
                     fi
                     ;;
                 bare)
@@ -73,9 +75,9 @@ for dir in ~/code/*/; do
         # Regular repo
         known_tab_names["$repo"]=1
         if echo "$tabs" | grep -qxF "$repo"; then
-            entries+="[tab] $repo"$'\t'"tab:$repo:"$'\n'
+            tab_entries+="[tab] $repo"$'\t'"tab:$repo:"$'\n'
         else
-            entries+="[repo] $repo"$'\t'"repo:$repo:$dir"$'\n'
+            repo_entries+="[repo] $repo"$'\t'"repo:$repo:$dir"$'\n'
         fi
     fi
 done
@@ -84,14 +86,15 @@ done
 while IFS= read -r tab; do
     [ -z "$tab" ] && continue
     if [ -z "${known_tab_names[$tab]+x}" ]; then
-        entries+="[tab] $tab"$'\t'"tab:$tab:"$'\n'
+        tab_entries+="[tab] $tab"$'\t'"tab:$tab:"$'\n'
     fi
 done <<< "$tabs"
 
+entries="${wt_entries}${repo_entries}${tab_entries}"
 [ -z "$entries" ] && echo "No tabs or worktrees found" && exit 0
 
 if [ "$dry_run" = true ]; then
-    echo -n "$entries" | sort -t']' -k2 | while IFS=$'\t' read -r display meta; do
+    echo -n "$entries" | while IFS=$'\t' read -r display meta; do
         printf '%s\t%s\n' "$display" "$meta"
     done
     exit 0
@@ -99,7 +102,7 @@ fi
 
 # --- Run fzf ---
 
-selection=$(echo -n "$entries" | sort -t']' -k2 | fzf \
+selection=$(echo -n "$entries" | fzf \
     --ansi \
     --no-multi \
     --delimiter=$'\t' \
