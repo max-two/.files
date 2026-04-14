@@ -15,7 +15,7 @@ keybinds {
             }
         }
         bind "Ctrl w" {
-            Run "wt" "switch" {
+            Run "workspace-switcher" {
                 floating true
                 close_on_exit true
             }
