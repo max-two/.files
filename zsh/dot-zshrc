@@ -3,7 +3,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if [[ -z "$ZELLIJ" ]]; then
-  zellij attach -c
+  zellij --layout default attach -c
   exit
 fi
 
