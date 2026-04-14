@@ -7,7 +7,7 @@ layout {
         pane split_direction="vertical" {
             pane command="claude" size="50%" focus=true close_on_exit=true
             pane stacked=true size="50%" {
-                pane command="hx" focus=true close_on_exit=true {
+                pane command="hx" expanded=true close_on_exit=true {
                     args "README.md"
                 }
                 pane name="terminal"
