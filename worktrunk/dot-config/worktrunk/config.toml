@@ -3,6 +3,9 @@ worktree-path = "{{ repo_path }}/../{{ branch | sanitize }}"
 [post-start]
 copy = "wt step copy-ignored"
 
+[step.copy-ignored]
+exclude = [".vite/"]
+
 
 # # User Configuration
 #
