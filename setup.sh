@@ -13,6 +13,7 @@ stow git
 stow ghostty
 stow helix
 stow navi
+stow worktrunk
 stow zellij
 
 # Install the rest of the packages

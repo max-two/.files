@@ -24,6 +24,7 @@ brew redis
 brew ripgrep
 brew stow
 brew terminal-notifier
+brew worktrunk
 brew zellij
 brew zoxide
 

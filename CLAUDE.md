@@ -56,6 +56,12 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - No man page — use `navi --help`
   - Bound to `Alt+?` in Zellij as a floating pane
 
+- **Worktrunk** — Git worktree manager for parallel AI agent workflows.
+  - Config: `worktrunk/dot-config/worktrunk/config.toml`
+  - No man page — use `wt --help` and subcommand help (e.g. `wt switch --help`)
+  - Online docs: https://worktrunk.dev/
+  - Completions: `/opt/homebrew/share/zsh/site-functions/_wt`
+
 - **Zellij** — Terminal multiplexer.
   - Config: `zellij/dot-config/zellij/config.kdl`
   - No man page — use `zellij --help` and `zellij setup --dump-config` for the full default config
@@ -87,4 +93,5 @@ Skip steps that don't apply (e.g. no stow package needed for a tool with no conf
 - The `.zshrc` sources `~/.localrc` at the end for machine-specific config that shouldn't be committed.
 - `zoxide` init **must** stay last in `.zshrc` — it overrides `cd` and the `chpwd` hook.
 - P10k instant prompt **must** stay at the top of `.zshrc`.
+- Worktrunk shell integration **must** come before zoxide in `.zshrc` — it needs the shell wrapper for `wt switch` to change directories, but doesn't conflict with zoxide's `cd` override.
 - Plugin order in `dot-zsh_plugins.txt` matters: `fzf-tab` before `autosuggestions`.

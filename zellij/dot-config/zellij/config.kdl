@@ -14,6 +14,12 @@ keybinds {
                 close_on_exit true
             }
         }
+        bind "Ctrl w" {
+            Run "wt" "switch" {
+                floating true
+                close_on_exit true
+            }
+        }
     }
 }
 

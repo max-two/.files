@@ -169,6 +169,9 @@ gdiff() {
 
 source $HOME/.localrc
 
+# worktrunk (before zoxide — needs shell wrapper for wt switch to cd)
+if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+
 # zoxide (must be last — overrides cd command and chpwd hook)
 if [[ -o interactive ]]; then
   _cached_eval zoxide zoxide init --cmd cd zsh

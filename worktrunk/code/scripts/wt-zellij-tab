@@ -1,0 +1,17 @@
+#!/bin/bash
+# Create or focus a Zellij tab for a worktrunk worktree.
+# Called from worktrunk post-switch hook:
+#   wt-zellij-tab <tab-name> <worktree-path>
+
+[ -z "$ZELLIJ" ] && exit 0
+
+tab_name="$1"
+worktree_path="$2"
+
+# Check if a tab with this name already exists (go-to-tab-name always
+# returns exit 0 even when the tab doesn't exist — zellij-org/zellij#3860)
+if zellij action query-tab-names 2>/dev/null | grep -qxF "$tab_name"; then
+    zellij action go-to-tab-name "$tab_name"
+else
+    zellij action new-tab --layout worktree --name "$tab_name" --cwd "$worktree_path"
+fi
