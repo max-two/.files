@@ -95,3 +95,4 @@ Skip steps that don't apply (e.g. no stow package needed for a tool with no conf
 - P10k instant prompt **must** stay at the top of `.zshrc`.
 - Worktrunk shell integration **must** come before zoxide in `.zshrc` — it needs the shell wrapper for `wt switch` to change directories, but doesn't conflict with zoxide's `cd` override.
 - Plugin order in `dot-zsh_plugins.txt` matters: `fzf-tab` before `autosuggestions`.
+- **Stow uses tree folding** — directories like `~/.config/zellij` may be symlinks to the stow source, not real directories. Running `rm` on files inside them deletes the stow source files. Never `rm` files in stow-managed paths to "clean up before restowing." If you need to restow, use `stow -R <package>` instead.
