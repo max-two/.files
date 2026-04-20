@@ -1,7 +1,9 @@
 # Path additions that should be available to all zsh invocations
-# (including non-interactive, e.g. Zellij command panes)
+# (including non-interactive, e.g. Zellij command panes, Claude Code agents)
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/code/scripts:$PATH"
+# fnm's default Node (yarn, node, npm, tsc, etc.) — follows `fnm default`
+export PATH="$HOME/.local/share/fnm/aliases/default/bin:$PATH"
 
 # Vite+
 [ -f "$HOME/.vite-plus/env" ] && source "$HOME/.vite-plus/env"
