@@ -5,3 +5,8 @@ export PATH="$HOME/code/scripts:$PATH"
 
 # Vite+
 [ -f "$HOME/.vite-plus/env" ] && source "$HOME/.vite-plus/env"
+
+# Point Zellij at the real config path. The stow symlink breaks its
+# filesystem watcher, so edits to config.kdl don't auto-reload.
+# See zellij-org/zellij#3992.
+export ZELLIJ_CONFIG_FILE="$HOME/code/.files/zellij/dot-config/zellij/config.kdl"
