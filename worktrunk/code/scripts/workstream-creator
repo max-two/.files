@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Create a new worktrunk branch in mono and let the post-switch hook
+# (wt-zellij-tab) spawn the Zellij tab with the worktree layout.
+
+[ -z "$ZELLIJ" ] && echo "Not inside Zellij" && exit 1
+
+echo "Create a new mono worktrunk"
+read -rp "branch name: " name
+
+name=$(echo "$name" | xargs)
+[ -z "$name" ] && exit 0
+
+wt -C "$HOME/code/mono/master" switch --create "$name"
