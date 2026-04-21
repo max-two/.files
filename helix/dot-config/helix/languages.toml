@@ -1,0 +1,49 @@
+# TypeScript / JavaScript + ESLint + Prettier
+#
+# typescript-language-server and tsx/jsx/javascript/typescript grammars are
+# already wired up in Helix's built-in languages.toml — we only override
+# what's needed: add the eslint language server and hook up prettier as the
+# formatter with auto-format on save.
+
+[language-server.eslint]
+command = "vscode-eslint-language-server"
+args = ["--stdio"]
+
+[language-server.eslint.config]
+validate = "on"
+experimental = { useFlatConfig = false }
+problems = { shortenToSingleLine = false }
+codeActionOnSave = { enable = true, mode = "all" }
+format = true
+quiet = false
+onIgnoredFiles = "off"
+rulesCustomizations = []
+run = "onType"
+nodePath = ""
+
+[language-server.eslint.config.workingDirectory]
+mode = "auto"
+
+[[language]]
+name = "typescript"
+auto-format = true
+formatter = { command = "npx", args = ["prettier", "--parser", "typescript"] }
+language-servers = ["typescript-language-server", "eslint"]
+
+[[language]]
+name = "tsx"
+auto-format = true
+formatter = { command = "npx", args = ["prettier", "--parser", "typescript"] }
+language-servers = ["typescript-language-server", "eslint"]
+
+[[language]]
+name = "javascript"
+auto-format = true
+formatter = { command = "npx", args = ["prettier", "--parser", "babel"] }
+language-servers = ["typescript-language-server", "eslint"]
+
+[[language]]
+name = "jsx"
+auto-format = true
+formatter = { command = "npx", args = ["prettier", "--parser", "babel"] }
+language-servers = ["typescript-language-server", "eslint"]

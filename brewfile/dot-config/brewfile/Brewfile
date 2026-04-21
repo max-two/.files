@@ -14,7 +14,9 @@ brew navi
 brew pyright
 brew ripgrep
 brew stow
+brew terminal-notifier
 brew typescript-language-server
+brew vscode-langservers-extracted
 brew worktrunk
 brew zellij
 brew zoxide
