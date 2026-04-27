@@ -1,5 +1,8 @@
 worktree-path = "{{ repo_path }}/../{{ branch | sanitize }}"
 
+[pre-start]
+sync-base = "git fetch origin {{ base }} && git rebase origin/{{ base }}"
+
 [post-start]
 copy = "wt step copy-ignored"
 
