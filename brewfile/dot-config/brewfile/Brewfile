@@ -2,46 +2,25 @@
 # tap repositories and their packages
 
 tap homebrew/core
-brew agent-browser
 brew antidote
 brew bat
-brew cloudflared
-brew cmake
 brew direnv
 brew eza
 brew fzf
 brew gh
 brew git-lfs
-brew go
 brew helix
-brew k6
-brew libtool
-brew libvterm
-brew md5sha1sum
 brew navi
-brew redis
 brew ripgrep
 brew stow
-brew terminal-notifier
 brew worktrunk
 brew zellij
 brew zoxide
 
 tap homebrew/cask
-cask 1password-cli
-cask font-caskaydia-cove-nerd-font
 cask ghostty
 cask obsidian
-cask zed
 
-tap atlassian/acli
-brew acli
-
-tap d12frosted/emacs-plus
-cask emacs-plus-app
 
 tap rcmdnk/file
 brew brew-file
-
-tap ro/taps
-brew rodeo
