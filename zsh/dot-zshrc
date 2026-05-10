@@ -121,9 +121,6 @@ autoload -Uz compinit
   if [[ $# -gt 0 ]]; then compinit; else compinit -C; fi
 } ~/.zcompdump(N.mh+24)
 
-# fnm
-_cached_eval fnm-completions fnm completions --shell zsh
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Antidote
@@ -143,9 +140,8 @@ _cached_eval fzf fzf --zsh
 # direnv
 _cached_eval direnv direnv hook zsh
 
-# fnm
-eval "$(fnm env --shell zsh --use-on-cd --version-file-strategy=recursive --resolve-engines=false --log-level=quiet)"
-
+# Vite+
+[ -f "$HOME/.vite-plus/env" ] && source "$HOME/.vite-plus/env"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

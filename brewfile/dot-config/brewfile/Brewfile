@@ -9,7 +9,6 @@ brew cloudflared
 brew cmake
 brew direnv
 brew eza
-brew fnm
 brew fzf
 brew gh
 brew git-lfs
