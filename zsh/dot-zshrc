@@ -163,7 +163,7 @@ gdiff() {
 # Local
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-source $HOME/.localrc
+[[ -f $HOME/.localrc ]] && source $HOME/.localrc
 
 # worktrunk (before zoxide — needs shell wrapper for wt switch to cd)
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
