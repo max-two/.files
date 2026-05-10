@@ -20,6 +20,11 @@ keybinds {
                 close_on_exit true
             }
         }
+        bind "Ctrl Shift x" {
+            Run "zellij" "kill-all-sessions" "--yes" {
+                close_on_exit true
+            }
+        }
     }
 }
 
