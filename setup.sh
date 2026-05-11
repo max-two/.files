@@ -13,6 +13,7 @@ stow git
 stow ghostty
 stow helix
 stow navi
+stow opencode
 stow worktrunk
 stow zellij
 
