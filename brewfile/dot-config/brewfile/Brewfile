@@ -18,6 +18,7 @@ brew zellij
 brew zoxide
 
 tap homebrew/cask
+cask font-jetbrains-mono-nerd-font
 cask ghostty
 cask obsidian
 
