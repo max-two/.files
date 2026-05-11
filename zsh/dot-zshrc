@@ -140,8 +140,6 @@ _cached_eval fzf fzf --zsh
 # direnv
 _cached_eval direnv direnv hook zsh
 
-# Vite+
-[ -f "$HOME/.vite-plus/env" ] && source "$HOME/.vite-plus/env"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,3 +170,4 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 if [[ -o interactive ]]; then
   _cached_eval zoxide zoxide init --cmd cd zsh
 fi
+

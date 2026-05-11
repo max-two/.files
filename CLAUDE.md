@@ -56,6 +56,10 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - No man page — use `navi --help`
   - Bound to `Alt+?` in Zellij as a floating pane
 
+- **Vite+ (vp)** — Unified javascript toolchain: runtime, package manager, and frontend toolchain.
+  - Config: `zsh/dot-zshenv` sources `$HOME/.vite-plus/env`
+  - No local docs — use `vp --help` and online docs at https://viteplus.dev/guide/
+
 - **Worktrunk** — Git worktree manager for parallel AI agent workflows.
   - Config: `worktrunk/dot-config/worktrunk/config.toml`
   - No man page — use `wt --help` and subcommand help (e.g. `wt switch --help`)

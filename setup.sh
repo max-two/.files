@@ -19,5 +19,8 @@ stow zellij
 # Install the rest of the packages
 brew file install
 
+# Install vp (official install — not in Brewfile since homebrew formula is broken)
+curl -fsSL https://vite.plus | bash
+
 # Setup touch id sudo
 sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local
