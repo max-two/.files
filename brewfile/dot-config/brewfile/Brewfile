@@ -25,3 +25,6 @@ cask obsidian
 
 tap rcmdnk/file
 brew brew-file
+
+tap anomalyco/tap
+brew opencode
