@@ -58,6 +58,7 @@ alias ll='eza --long --header --time-style=relative --no-filesize --tree --level
 alias z='zed'
 alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
 alias cat='bat'
+alias brew-up='brew update && brew upgrade --cask --greedy obsidian && brew upgrade'
 alias ...='popd'
 alias claude-logs='tail -f ~/.claude/logs/session_$(cat ~/.claude/logs/.current_session).log'
 alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help
