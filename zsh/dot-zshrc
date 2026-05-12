@@ -42,6 +42,9 @@ export EDITOR="hx"
 # LSP
 export ENABLE_LSP_TOOL=1
 
+# OpenCode
+export OPENCODE_ENABLE_EXA=1
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Aliases
@@ -170,4 +173,3 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 if [[ -o interactive ]]; then
   _cached_eval zoxide zoxide init --cmd cd zsh
 fi
-
