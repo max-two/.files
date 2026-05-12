@@ -11,8 +11,10 @@ brew gh
 brew git-lfs
 brew helix
 brew navi
+brew pyright
 brew ripgrep
 brew stow
+brew typescript-language-server
 brew worktrunk
 brew zellij
 brew zoxide
