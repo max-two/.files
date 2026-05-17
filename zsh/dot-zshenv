@@ -1,7 +1,8 @@
 # Path additions that should be available to all zsh invocations
 # (including non-interactive, e.g. Zellij command panes, Claude Code agents)
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/code/scripts:$PATH"
+typeset -U path
+path=("$HOME/.local/bin" "$HOME/scripts" "$HOME"/scripts/*(N/) $path)
+export PATH
 # fnm's default Node (yarn, node, npm, tsc, etc.) — follows `fnm default`
 export PATH="$HOME/.local/share/fnm/aliases/default/bin:$PATH"
 

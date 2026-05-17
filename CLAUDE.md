@@ -12,6 +12,7 @@ The `--dotfiles` flag in `.stowrc` means files named `dot-*` become `.*` when sy
 - `git/dot-gitconfig` → `~/.gitconfig`
 - `p10k/dot-p10k.zsh` → `~/.p10k.zsh`
 - `brewfile/dot-config/brewfile/Brewfile` → `~/.config/brewfile/Brewfile`
+- `worktrunk/scripts/worktrunk/wt-zellij-tab` → `~/scripts/worktrunk/wt-zellij-tab`
 
 To add a new config:
 
@@ -62,6 +63,7 @@ When editing configuration for a tool, read its docs before making changes. Don'
 
 - **Worktrunk** — Git worktree manager for parallel AI agent workflows.
   - Config: `worktrunk/dot-config/worktrunk/config.toml`
+  - Scripts: `worktrunk/scripts/worktrunk/` → `~/scripts/worktrunk/`
   - No man page — use `wt --help` and subcommand help (e.g. `wt switch --help`)
   - Online docs: https://worktrunk.dev/
   - Completions: `/opt/homebrew/share/zsh/site-functions/_wt`
