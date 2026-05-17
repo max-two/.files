@@ -3,6 +3,7 @@
   "small_model": "openai/gpt-5.4-mini",
   "model": "openai/gpt-5.3-codex",
   "permission": {
+    "read": "allow",
     "websearch": "allow",
     "bash": {
       "obsidian *": "allow",
@@ -11,6 +12,12 @@
       "brew upgrade *": "allow",
       "brew cleanup *": "allow",
       "command *": "allow",
+      "git log *": "allow",
+      "git show *": "allow",
+      "git status *": "allow",
+      "node *": "allow",
+      "pnpm --version *": "allow",
+      "readlink *": "allow",
       "type *": "allow",
       "stat *": "allow",
       "ls *": "allow"
