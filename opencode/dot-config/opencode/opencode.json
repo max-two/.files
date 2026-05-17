@@ -11,6 +11,7 @@
 			"brew outdated *": "allow",
 			"brew upgrade *": "allow",
 			"brew cleanup *": "allow",
+			"brew info *": "allow",
 			"command *": "allow",
 			"git log *": "allow",
 			"git show *": "allow",
