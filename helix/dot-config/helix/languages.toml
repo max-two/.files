@@ -1,49 +1,48 @@
-# TypeScript / JavaScript + ESLint + Prettier
+# TypeScript / JavaScript + Biome
 #
-# typescript-language-server and tsx/jsx/javascript/typescript grammars are
-# already wired up in Helix's built-in languages.toml — we only override
-# what's needed: add the eslint language server and hook up prettier as the
-# formatter with auto-format on save.
+# Keep TypeScript language features from typescript-language-server, but route
+# save-time formatting through Biome so projects with a biome config get Biome's
+# formatter and assist actions instead of Prettier / ESLint.
 
-[language-server.eslint]
-command = "vscode-eslint-language-server"
-args = ["--stdio"]
-
-[language-server.eslint.config]
-validate = "on"
-experimental = { useFlatConfig = false }
-problems = { shortenToSingleLine = false }
-codeActionOnSave = { enable = true, mode = "all" }
-format = true
-quiet = false
-onIgnoredFiles = "off"
-rulesCustomizations = []
-run = "onType"
-nodePath = ""
-
-[language-server.eslint.config.workingDirectory]
-mode = "auto"
+[language-server.biome]
+command = "biome"
+args = ["lsp-proxy"]
 
 [[language]]
 name = "typescript"
 auto-format = true
-formatter = { command = "npx", args = ["prettier", "--parser", "typescript"] }
-language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
+language-servers = [{ name = "typescript-language-server", except-features = ["format"] }, "biome"]
 
 [[language]]
 name = "tsx"
 auto-format = true
-formatter = { command = "npx", args = ["prettier", "--parser", "typescript"] }
-language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
+language-servers = [{ name = "typescript-language-server", except-features = ["format"] }, "biome"]
 
 [[language]]
 name = "javascript"
 auto-format = true
-formatter = { command = "npx", args = ["prettier", "--parser", "babel"] }
-language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
+language-servers = [{ name = "typescript-language-server", except-features = ["format"] }, "biome"]
 
 [[language]]
 name = "jsx"
 auto-format = true
-formatter = { command = "npx", args = ["prettier", "--parser", "babel"] }
-language-servers = ["typescript-language-server", "eslint"]
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
+language-servers = [{ name = "typescript-language-server", except-features = ["format"] }, "biome"]
+
+[[language]]
+name = "json"
+auto-format = true
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
+
+[[language]]
+name = "css"
+auto-format = true
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
+
+[[language]]
+name = "html"
+auto-format = true
+formatter = { command = "biome", args = ["check", "--write", "--linter-enabled=false", "--stdin-file-path", "%{buffer_name}"] }
