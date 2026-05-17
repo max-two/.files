@@ -2,5 +2,5 @@
 # (/etc/zprofile), which reshuffles anything set in .zshenv.
 # Zellij command panes inherit PATH from the parent login shell.
 typeset -U path
-path=("/opt/homebrew/bin" "$HOME/.local/bin" "$HOME/scripts" "$HOME"/scripts/*(N/) $path)
+path=("$HOME/.local/share/fnm/aliases/default/bin" "/opt/homebrew/bin" "$HOME/.local/bin" "$HOME/scripts" "$HOME"/scripts/*(N/) $path)
 export PATH

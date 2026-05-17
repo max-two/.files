@@ -57,9 +57,9 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - No man page — use `navi --help`
   - Bound to `Alt+?` in Zellij as a floating pane
 
-- **Vite+ (vp)** — Unified javascript toolchain: runtime, package manager, and frontend toolchain.
-  - Config: `zsh/dot-zshenv` sources `$HOME/.vite-plus/env`
-  - No local docs — use `vp --help` and online docs at https://viteplus.dev/guide/
+- **fnm** — Fast Node.js version manager.
+  - Config: `zsh/dot-zshrc` initializes `fnm`; `zsh/dot-zshenv` exposes the default Node toolchain to non-interactive shells
+  - No local docs — use `fnm --help` and online docs at https://github.com/Schniz/fnm
 
 - **Worktrunk** — Git worktree manager for parallel AI agent workflows.
   - Config: `worktrunk/dot-config/worktrunk/config.toml`
@@ -100,5 +100,6 @@ Skip steps that don't apply (e.g. no stow package needed for a tool with no conf
 - `zoxide` init **must** stay last in `.zshrc` — it overrides `cd` and the `chpwd` hook.
 - P10k instant prompt **must** stay at the top of `.zshrc`.
 - Worktrunk shell integration **must** come before zoxide in `.zshrc` — it needs the shell wrapper for `wt switch` to change directories, but doesn't conflict with zoxide's `cd` override.
+- Non-interactive Node access depends on `fnm default` — `.zshenv` prepends `~/.local/share/fnm/aliases/default/bin`, so changing the global default should be done with `fnm default <version>`.
 - Plugin order in `dot-zsh_plugins.txt` matters: `fzf-tab` before `autosuggestions`.
 - **Stow uses tree folding** — directories like `~/.config/zellij` may be symlinks to the stow source, not real directories. Running `rm` on files inside them deletes the stow source files. Never `rm` files in stow-managed paths to "clean up before restowing." If you need to restow, use `stow -R <package>` instead.

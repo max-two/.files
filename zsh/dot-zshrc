@@ -125,6 +125,11 @@ autoload -Uz compinit
   if [[ $# -gt 0 ]]; then compinit; else compinit -C; fi
 } ~/.zcompdump(N.mh+24)
 
+# fnm
+if command -v fnm >/dev/null 2>&1; then
+  _cached_eval fnm-completions fnm completions --shell zsh
+fi
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Antidote
@@ -143,6 +148,11 @@ _cached_eval fzf fzf --zsh
 
 # direnv
 _cached_eval direnv direnv hook zsh
+
+# fnm
+if command -v fnm >/dev/null 2>&1; then
+  eval "$(fnm env --shell zsh --use-on-cd --version-file-strategy=recursive --resolve-engines=false --log-level=quiet)"
+fi
 
 
 
