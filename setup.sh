@@ -23,6 +23,7 @@ brew file install
 # Install latest LTS Node with Corepack and make it the default for non-interactive shells
 fnm install --lts --corepack-enabled
 fnm default lts-latest
+corepack install -g pnpm@latest
 
 # Setup touch id sudo
 sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local
