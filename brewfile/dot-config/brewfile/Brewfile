@@ -5,6 +5,7 @@ tap homebrew/core
 brew antidote
 brew bat
 brew direnv
+brew defuddle
 brew eza
 brew fnm
 brew fzf

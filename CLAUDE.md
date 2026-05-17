@@ -39,6 +39,9 @@ When editing configuration for a tool, read its docs before making changes. Don'
 - **homebrew-file** (`brew-file`) — Used for `brew file install` on a fresh machine. The Brewfile is manually curated.
   - No local docs — run `brew file help` for usage.
 
+- **Defuddle** — Extract article content and metadata from web pages.
+  - No man page or bundled docs — use `defuddle --help` for usage.
+
 - **Antidote** — Zsh plugin manager.
   - Config: `zsh/dot-zsh_plugins.txt`, loaded via `antidote load` in `.zshrc`
   - Man page: `/opt/homebrew/share/man/man1/antidote.1`
