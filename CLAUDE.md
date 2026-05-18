@@ -54,6 +54,12 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - CLI actions: `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.1.md`
   - Check a specific option's default: `ghostty +show-config --default --docs`
 
+- **glow** — Terminal markdown renderer (charmbracelet).
+  - No config file; uses defaults
+  - No man page — use `glow --help`
+  - Online docs: https://github.com/charmbracelet/glow
+  - Bound in Helix as `space M` to open the current file in a new zellij pane (`glow -p`)
+
 - **navi** — Interactive cheatsheet tool for the terminal.
   - Config: `navi/dot-config/navi/config.yaml`
   - Cheats: `navi/dot-local/share/navi/cheats/` (one `.cheat` file per tool)

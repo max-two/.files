@@ -12,6 +12,7 @@ brew fnm
 brew fzf
 brew gh
 brew git-lfs
+brew glow
 brew helix
 brew navi
 brew pyright

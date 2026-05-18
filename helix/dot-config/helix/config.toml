@@ -1,1 +1,4 @@
 theme = "everforest_dark"
+
+[keys.normal.space]
+M = ":sh zellij run --close-on-exit --name glow --direction right -- glow -p %{buffer_name}"
