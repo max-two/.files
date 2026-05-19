@@ -8,14 +8,30 @@ scrollback_editor "none"
 // Keybinds
 keybinds {
     shared_except "locked" {
+        // Pane focus with Ctrl + hjkl
+        bind "Ctrl h" { MoveFocus "Left"; }
+        bind "Ctrl j" { MoveFocus "Down"; }
+        bind "Ctrl k" { MoveFocus "Up"; }
+        bind "Ctrl l" { MoveFocus "Right"; }
+
+        // Tab navigation with Alt + h/l
+        bind "Alt h" { GoToPreviousTab; }
+        bind "Alt l" { GoToNextTab; }
+
         bind "Ctrl /" {
             Run "navi" "--print" {
                 floating true
                 close_on_exit true
             }
         }
-        bind "Ctrl w" {
+        bind "Alt j" {
             Run "workspace-switcher" {
+                floating true
+                close_on_exit true
+            }
+        }
+        bind "Alt k" {
+            Run "workstream-creator" {
                 floating true
                 close_on_exit true
             }
@@ -25,9 +41,8 @@ keybinds {
                 close_on_exit true
             }
         }
-        bind "Alt w" {
-            Run "workstream-creator" {
-                floating true
+        bind "Ctrl Shift r" {
+            Run "touch" "/Users/max.mckinley/.config/zellij/config.kdl" {
                 close_on_exit true
             }
         }

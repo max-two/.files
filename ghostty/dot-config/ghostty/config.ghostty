@@ -5,3 +5,10 @@ theme = Everforest Dark Hard
 # Don't pass Cmd+C to terminal when no Ghostty selection exists (avoids
 # stray 'c' input when copying Zellij-managed selections)
 keybind = super+c=copy_to_clipboard
+
+# Force-disambiguate Ctrl+H from Backspace by sending the kitty keyboard
+# protocol CSI u sequence so zellij can bind Ctrl+H as a distinct key.
+# Trailing \x00 is required: Ghostty's text: action silently rejects
+# payloads that are only a complete CSI sequence (the keybind falls
+# through to legacy ^H without it). The null byte is discarded by shells.
+keybind = ctrl+h=text:\x1b[104;5u\x00
