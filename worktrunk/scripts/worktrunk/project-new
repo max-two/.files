@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Two-step worktree creation: pick a repo, type a branch name.
+# Delegates to worktrunk; the post-switch hook creates the Zellij tab.
+
+set -euo pipefail
+
+[ -z "${ZELLIJ:-}" ] && echo "Not inside Zellij" && exit 1
+
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+
+# Step 1: pick a repo. Dedupe project-list to one entry per repo so the
+# picker shows clean repo names. For bare repos, any worktree path works
+# for `wt -C`; for regular repos, the main repo path is used.
+selection=$("$script_dir/project-list" | awk -F'\t' '
+{
+    name = $1
+    repo = name
+    sub(" / .*$", "", repo)
+    if (!(repo in seen)) {
+        seen[repo] = 1
+        printf "%s\t%s\n", repo, $2
+    }
+}
+' | fzf \
+    --delimiter=$'\t' \
+    --with-nth=1 \
+    --prompt='repo> ' \
+    --header='enter: pick repo  esc: cancel')
+
+[ -z "$selection" ] && exit 0
+
+IFS=$'\t' read -r repo repo_path <<< "$selection"
+
+# Step 2: prompt for branch name using fzf as a text input.
+branch=$(fzf \
+    --prompt="branch name for $repo> " \
+    --header='enter: create  esc: cancel' \
+    --bind='enter:print-query+abort' \
+    < /dev/null 2>/dev/null | xargs)
+
+[ -z "$branch" ] && exit 0
+
+wt -C "$repo_path" switch --create "$branch"

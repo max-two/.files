@@ -24,14 +24,20 @@ keybinds {
                 close_on_exit true
             }
         }
-        bind "Alt j" {
-            Run "workspace-switcher" {
+        bind "Alt o" {
+            Run "project-open" {
                 floating true
                 close_on_exit true
             }
         }
-        bind "Alt k" {
-            Run "workstream-creator" {
+        bind "Alt n" {
+            Run "project-new" {
+                floating true
+                close_on_exit true
+            }
+        }
+        bind "Alt x" {
+            Run "project-close" {
                 floating true
                 close_on_exit true
             }

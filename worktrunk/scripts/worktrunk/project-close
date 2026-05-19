@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Interactive worktree teardown. Tab closing is handled by worktrunk's
+# post-remove hook, not by this script.
+
+set -euo pipefail
+
+[ -z "${ZELLIJ:-}" ] && echo "Not inside Zellij" && exit 1
+
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+
+# Filter to worktree entries only — repo entries are main checkouts of
+# regular repos and can't be safely removed via `wt remove`.
+selection=$("$script_dir/project-list" | awk -F'\t' '
+$3 == "worktree" { data[NR] = $0; if (length($1) > w1) w1 = length($1); if (length($2) > w2) w2 = length($2) }
+END {
+    for (i in data) {
+        n = split(data[i], f, "\t")
+        printf "%-*s  %-*s  %s\t%s\n", w1, f[1], w2, f[2], f[3], f[2]
+    }
+}
+' | fzf \
+    --delimiter=$'\t' \
+    --with-nth=1 \
+    --prompt='close> ' \
+    --header='enter: remove worktree  esc: cancel')
+
+[ -z "$selection" ] && exit 0
+
+IFS=$'\t' read -r _ worktree_path <<< "$selection"
+
+# Pick a working dir for `wt remove` that is NOT the worktree being removed.
+# If we pass -C the target, worktrunk auto-switches us out first (fires
+# post-switch, spawns an unwanted tab). Instead, point -C at the bare repo
+# dir (for bare-repo worktrees) or the main-repo dir (for regular-repo
+# additional worktrees). Both work for any worktree of the repo, including
+# the last one — no sibling needed.
+branch=$(git -C "$worktree_path" branch --show-current 2>/dev/null)
+target_parent=$(dirname "$worktree_path")
+
+if [ -d "$target_parent/.bare" ]; then
+    safe_dir="$target_parent"
+else
+    common_dir=$(git -C "$worktree_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+    safe_dir="${common_dir%/.git}"
+    safe_dir="${safe_dir%/.bare}"
+fi
+
+if ! wt -C "$safe_dir" remove --yes "$branch"; then
+    echo ""
+    echo "Press [f] to force-remove (--force --force-delete), any other key to cancel."
+    read -rn 1 key
+    echo ""
+    if [ "$key" = "f" ] || [ "$key" = "F" ]; then
+        if ! wt -C "$safe_dir" remove --yes --force --force-delete "$branch"; then
+            echo ""
+            echo "(press any key to close)"
+            read -rn 1
+        fi
+    fi
+fi

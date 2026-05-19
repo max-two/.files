@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Interactive picker for opening a project in a Zellij tab.
+
+set -euo pipefail
+
+[ -z "${ZELLIJ:-}" ] && echo "Not inside Zellij" && exit 1
+
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+
+# Format project-list output:
+#   aligned-display \t name \t path
+# fzf displays only the aligned column; we use the trailing fields to look
+# up name + path after selection.
+selection=$("$script_dir/project-list" | awk -F'\t' '
+{
+    data[NR] = $0
+    if (length($1) > w1) w1 = length($1)
+    if (length($2) > w2) w2 = length($2)
+}
+END {
+    for (i = 1; i <= NR; i++) {
+        n = split(data[i], f, "\t")
+        printf "%-*s  %-*s  %s\t%s\t%s\n", w1, f[1], w2, f[2], f[3], f[1], f[2]
+    }
+}
+' | fzf \
+    --delimiter=$'\t' \
+    --with-nth=1 \
+    --prompt='project> ' \
+    --header='enter: open  esc: cancel')
+
+[ -z "$selection" ] && exit 0
+
+IFS=$'\t' read -r _ _ path <<< "$selection"
+
+"$script_dir/zellij-tab-open" "$path"

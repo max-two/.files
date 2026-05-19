@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Create or focus a Zellij tab for the project at <path>.
+# Tab name is derived from the path to stay in sync with project-list.
+# Usage: zellij-tab-open <path>
+
+[ -z "${ZELLIJ:-}" ] && exit 0
+
+path="$1"
+parent=$(dirname "$path")
+
+# Main checkout of a regular repo: ~/code/<name> or ~/scripts/<name>
+if [ "$parent" = "$HOME/code" ] || [ "$parent" = "$HOME/scripts" ]; then
+    name=$(basename "$path")
+else
+    # Worktree of a bare repo: ~/code/<repo>/<branch-dir>
+    branch=$(git -C "$path" branch --show-current 2>/dev/null)
+    [ -z "$branch" ] && branch="detached"
+    sanitized=$(printf '%s' "$branch" | tr '/\\' '--')
+    name="$(basename "$parent") / $sanitized"
+fi
+
+# zellij's go-to-tab-name returns 0 even if the tab doesn't exist
+# (zellij-org/zellij#3860), so check existence explicitly first.
+if zellij action query-tab-names 2>/dev/null | grep -qxF "$name"; then
+    zellij action go-to-tab-name "$name"
+else
+    zellij action new-tab --layout layout --name "$name" --cwd "$path"
+fi

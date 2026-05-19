@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Close the Zellij tab for the project at <path>, without changing the
+# currently focused tab. Called from post-remove, so the path may no longer
+# exist — derive the tab name from the path components.
+# Usage: zellij-tab-close <path>
+
+[ -z "${ZELLIJ:-}" ] && exit 0
+
+path="$1"
+parent=$(dirname "$path")
+
+# For bare-repo worktrees, the basename of the worktree directory IS the
+# sanitized branch name (worktrunk's worktree-path template uses
+# `{{ branch | sanitize }}` for the leaf). So we can construct the tab
+# name without invoking git on a path that may already be gone.
+name="$(basename "$parent") / $(basename "$path")"
+
+# Look up the tab's stable ID by name and close it via close-tab-by-id,
+# which leaves the user's current tab focus untouched.
+target_id=$(zellij action list-tabs --json 2>/dev/null \
+    | jq -r --arg n "$name" '.[] | select(.name == $n) | .id' 2>/dev/null \
+    | head -1)
+
+[ -n "$target_id" ] && zellij action close-tab-by-id "$target_id"

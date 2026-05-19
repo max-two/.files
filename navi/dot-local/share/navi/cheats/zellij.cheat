@@ -78,11 +78,14 @@ Alt+h
 # Next tab (direct)
 Alt+l
 
-# Workspace switcher
-Alt+j
+# Open project (interactive picker)
+Alt+o
 
-# Workstream creator (new workspace)
-Alt+k
+# New worktree (pick repo, then enter branch name)
+Alt+n
+
+# Close worktree (remove + close tab via worktrunk post-remove)
+Alt+x
 
 # Navi cheatsheet
 Ctrl+/

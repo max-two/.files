@@ -6,6 +6,12 @@ sync-base = "git fetch origin {{ base }} && git rebase origin/{{ base }}"
 [post-start]
 copy = "wt step copy-ignored"
 
+[post-switch]
+zellij-tab = "zellij-tab-open '{{ worktree_path }}'"
+
+[post-remove]
+zellij-tab = "zellij-tab-close '{{ worktree_path }}'"
+
 [step.copy-ignored]
 exclude = [".vite/"]
 
