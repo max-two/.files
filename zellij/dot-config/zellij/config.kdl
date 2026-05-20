@@ -18,6 +18,9 @@ keybinds {
         bind "Alt h" { GoToPreviousTab; }
         bind "Alt l" { GoToNextTab; }
 
+        // Toggle fullscreen for the focused pane
+        bind "Ctrl f" { ToggleFocusFullscreen; }
+
         bind "Ctrl /" {
             Run "navi" "--print" {
                 floating true
