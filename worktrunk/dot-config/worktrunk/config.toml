@@ -5,6 +5,7 @@ sync-base = "git fetch origin {{ base }} && git rebase origin/{{ base }}"
 
 [post-start]
 copy = "wt step copy-ignored"
+zoxide-prime = "git -C {{ worktree_path }} ls-tree -r -d --name-only HEAD | awk -F/ -v wt={{ worktree_path }} 'NF <= 4 { print wt \"/\" $0 }' | tr '\\n' '\\0' | xargs -0 zoxide add"
 
 [post-switch]
 zellij-tab = "zellij-tab-open '{{ worktree_path }}'"
