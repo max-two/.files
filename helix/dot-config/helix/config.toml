@@ -2,3 +2,12 @@ theme = "everforest_dark"
 
 [keys.normal.space]
 M = ":sh zellij run --close-on-exit --name glow --direction right -- glow -p %{buffer_name}"
+e = [
+  ":sh rm -f /tmp/yazi-chooser",
+  ":set mouse false",
+  ":insert-output yazi '%{buffer_name}' --chooser-file=/tmp/yazi-chooser",
+  ':sh printf "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+  ":open %sh{cat /tmp/yazi-chooser}",
+  ":set mouse true",
+  ":redraw",
+]

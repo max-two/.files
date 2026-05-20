@@ -21,6 +21,7 @@ brew stow
 brew terminal-notifier
 brew typescript-language-server
 brew worktrunk
+brew yazi
 brew zellij
 brew zoxide
 

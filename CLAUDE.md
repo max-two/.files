@@ -77,6 +77,12 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - Online docs: https://worktrunk.dev/
   - Completions: `/opt/homebrew/share/zsh/site-functions/_wt`
 
+- **yazi** — TUI file manager.
+  - No config file yet; uses defaults
+  - No man page — use `yazi --help`
+  - Online docs: https://yazi-rs.github.io/
+  - Bound in Helix as `space e` — opens yazi as an overlay in the current Helix instance, and the file selected in yazi is opened in that same Helix instance via yazi's `--chooser-file` flag. Requires Helix ≥ 25.07 for the `%{buffer_name}` and `%sh{...}` expansions.
+
 - **Zellij** — Terminal multiplexer.
   - Config: `zellij/dot-config/zellij/config.kdl`
   - No man page — use `zellij --help` and `zellij setup --dump-config` for the full default config

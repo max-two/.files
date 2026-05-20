@@ -1,0 +1,202 @@
+% yazi
+
+# Quit (writes cwd to --cwd-file if set)
+q
+
+# Quit without writing cwd-file
+Q
+
+# Help (full keymap, filterable with f)
+~ / F1
+
+# Move down / up
+j / k
+
+# Half page down / up
+Ctrl+d / Ctrl+u
+
+# Full page down / up
+Ctrl+f / Ctrl+b
+
+# Top of list / bottom of list
+gg / G
+
+# Enter directory / back to parent
+l / h
+
+# Forward / back in directory history (like browser fwd/back)
+L / H
+
+# Toggle hidden files
+.
+
+# Filter current directory (fuzzy)
+f
+
+# Find next / previous match
+/ / ?
+
+# Next / prev match after a find
+n / N
+
+# Search files by NAME via fd
+s
+
+# Search files by CONTENT via ripgrep
+S
+
+# Jump to file/directory via fzf (recursive)
+z
+
+# Jump to directory via zoxide
+Z
+
+# Create file (suffix / for directory, e.g. foo/)
+a
+
+# Bulk create files (opens editor)
+A
+
+# Rename selected file(s)
+r
+
+# Trash selected files (recoverable on macOS)
+d
+
+# Permanently delete selected files
+D
+
+# Yank (copy) selected files
+y
+
+# Yank (cut) selected files
+x
+
+# Paste yanked files
+p
+
+# Paste yanked files, overwriting existing
+P
+
+# Cancel yank
+Y / X
+
+# Toggle selection on current file (and move down)
+Space
+
+# Select all files in current dir
+Ctrl+a
+
+# Invert selection
+Ctrl+r
+
+# Enter visual selection mode (range select)
+v
+
+# Enter visual unselect mode (range unselect)
+V
+
+# Open selected file(s) — opens in Helix when launched from helix
+Enter / o
+
+# Open with picker (choose application)
+Shift+Enter / O
+
+# Symlink the yanked files (absolute path)
+-
+
+# Symlink the yanked files (relative path)
+_
+
+# Hardlink yanked files
+Ctrl+-
+
+# Spot hovered file (detailed metadata view)
+Tab
+
+# Run shell command (interactive, non-blocking)
+;
+
+# Run shell command (blocks until done)
+:
+
+# Copy full path of file to clipboard
+cc
+
+# Copy directory path to clipboard
+cd
+
+# Copy filename to clipboard
+cf
+
+# Copy filename without extension
+cn
+
+# Show tasks panel (background ops like copy/move)
+w
+
+# Create new tab in current dir
+tt
+
+# Rename current tab
+tr
+
+# Switch to tab N
+<number>
+
+# Previous / next tab
+[ / ]
+
+# Swap current tab with previous / next
+{ / }
+
+# Go to home
+gh
+
+# Go to ~/.config
+gc
+
+# Go to ~/Downloads
+gd
+
+# Jump to directory interactively (fzf-style)
+g<Space>
+
+# Follow symlink under cursor
+gf
+
+# Sort by modified time (asc / desc)
+,m / ,M
+
+# Sort by birth time (asc / desc)
+,b / ,B
+
+# Sort by extension (asc / desc)
+,e / ,E
+
+# Sort alphabetically (asc / desc)
+,a / ,A
+
+# Sort naturally (asc / desc) — handles numbers in names
+,n / ,N
+
+# Sort by size (asc / desc)
+,s / ,S
+
+# Sort randomly
+,r
+
+# Linemode: show file size
+ms
+
+# Linemode: show permissions
+mp
+
+# Linemode: show modified time
+mm
+
+# Linemode: show owner
+mo
+
+# Linemode: hide metadata
+mn
