@@ -78,7 +78,8 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - Completions: `/opt/homebrew/share/zsh/site-functions/_wt`
 
 - **yazi** — TUI file manager.
-  - No config file yet; uses defaults
+  - Config: `yazi/dot-config/yazi/keymap.toml`
+  - Scripts: `yazi/scripts/yazi/` → `~/scripts/yazi/`
   - No man page — use `yazi --help`
   - Online docs: https://yazi-rs.github.io/
   - Bound in Helix as `space e` — opens yazi as an overlay in the current Helix instance, and the file selected in yazi is opened in that same Helix instance via yazi's `--chooser-file` flag. Requires Helix ≥ 25.07 for the `%{buffer_name}` and `%sh{...}` expansions.

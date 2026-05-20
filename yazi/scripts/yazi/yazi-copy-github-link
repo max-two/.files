@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+yazi-github-url "$1" | pbcopy

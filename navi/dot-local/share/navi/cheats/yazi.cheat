@@ -18,8 +18,8 @@ Ctrl+d / Ctrl+u
 # Full page down / up
 Ctrl+f / Ctrl+b
 
-# Top of list / bottom of list
-gg / G
+# Bottom of list (gg is overridden — see custom bindings below)
+G
 
 # Enter directory / back to parent
 l / h
@@ -200,3 +200,14 @@ mo
 
 # Linemode: hide metadata
 mn
+
+# --- Custom bindings (see ~/.config/yazi/keymap.toml) ---
+
+# Copy path relative to git repo root
+cr
+
+# Copy GitHub link on current branch
+cg
+
+# Open in GitHub on current branch
+gg

@@ -1,0 +1,8 @@
+#:schema https://yazi-rs.github.io/schemas/keymap.json
+
+[mgr]
+prepend_keymap = [
+    { on = ["c", "r"], run = "shell -- yazi-copy-relative-path %h",  desc = "Copy path relative to git root" },
+    { on = ["c", "g"], run = "shell -- yazi-copy-github-link %h",    desc = "Copy GitHub link (current branch)" },
+    { on = ["g", "g"], run = "shell -- yazi-open-github %h",         desc = "Open in GitHub (current branch)" },
+]

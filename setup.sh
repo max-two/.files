@@ -15,6 +15,7 @@ stow helix
 stow navi
 stow opencode
 stow worktrunk
+stow yazi
 stow zellij
 
 # Install the rest of the packages
