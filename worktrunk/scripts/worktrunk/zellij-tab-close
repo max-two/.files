@@ -24,7 +24,7 @@ if [ "$current_name" = "$name" ]; then
     zellij action close-tab
 else
     target_id=$(zellij action list-tabs --json 2>/dev/null \
-        | jq -r --arg n "$name" '.[] | select(.name == $n) | .id' 2>/dev/null \
+        | jq -r --arg n "$name" '.[] | select(.name == $n) | .tab_id' 2>/dev/null \
         | head -1)
     [ -n "$target_id" ] && zellij action close-tab-by-id "$target_id"
 fi
