@@ -12,6 +12,7 @@ script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 # picker shows clean repo names. For bare repos, any worktree path works
 # for `wt -C`; for regular repos, the main repo path is used.
 selection=$("$script_dir/project-list" | awk -F'\t' '
+$3 == "path" { next }
 {
     name = $1
     repo = name
