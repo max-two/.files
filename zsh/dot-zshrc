@@ -206,3 +206,6 @@ cd() {
   fi
   __zoxide_z "$@"
 }
+
+# Vite+ bin (https://viteplus.dev)
+. "$HOME/.vite-plus/env"
