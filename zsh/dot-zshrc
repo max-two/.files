@@ -183,29 +183,34 @@ gdiff() {
 # worktrunk (before zoxide — needs shell wrapper for wt switch to cd)
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
 
-# zoxide (must be last — overrides cd command and chpwd hook)
+# zoxide (must be last — overrides cd command and chpwd hook).
+# Both the init and the cd() override below are guarded to interactive shells.
+# The override calls zoxide's __zoxide_z, so defining it in a non-interactive
+# shell (Claude Code's Bash tool, Zellij command panes, `zsh -c` scripts that
+# source this file) would leave a cd() that calls an undefined __zoxide_z and
+# fails with exit 127. Non-interactive shells keep the plain builtin cd.
 if [[ -o interactive ]]; then
   _cached_eval zoxide zoxide init --cmd cd zsh
-fi
 
-# Bias zoxide queries toward the current git worktree by injecting the
-# worktree's basename as a leading keyword. Combined with the post-start
-# `zoxide-prime` hook in worktrunk config, this makes `cd src` from inside a
-# fresh worktree land at that worktree's `src` instead of master's.
-# Must come after zoxide init (it overrides the cd function zoxide created).
-cd() {
-  if [ $# -eq 0 ] || [ -d "$1" ] || [[ "$1" == /* || "$1" == ./* || "$1" == ../* || "$1" == ~* || "$1" == - || "$1" == -- ]]; then
+  # Bias zoxide queries toward the current git worktree by injecting the
+  # worktree's basename as a leading keyword. Combined with the post-start
+  # `zoxide-prime` hook in worktrunk config, this makes `cd src` from inside a
+  # fresh worktree land at that worktree's `src` instead of master's.
+  # Must come after zoxide init (it overrides the cd function zoxide created).
+  cd() {
+    if [ $# -eq 0 ] || [ -d "$1" ] || [[ "$1" == /* || "$1" == ./* || "$1" == ../* || "$1" == ~* || "$1" == - || "$1" == -- ]]; then
+      __zoxide_z "$@"
+      return
+    fi
+
+    local toplevel
+    toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
+    if [ -n "$toplevel" ]; then
+      __zoxide_z "$(basename "$toplevel")" "$@" 2>/dev/null && return
+    fi
     __zoxide_z "$@"
-    return
-  fi
-
-  local toplevel
-  toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
-  if [ -n "$toplevel" ]; then
-    __zoxide_z "$(basename "$toplevel")" "$@" 2>/dev/null && return
-  fi
-  __zoxide_z "$@"
-}
+  }
+fi
 
 # Vite+ bin (https://viteplus.dev)
 . "$HOME/.vite-plus/env"
