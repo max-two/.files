@@ -1,0 +1,11 @@
+{
+  "openIssue": {
+    "path": "/Users/max.mckinley/scripts/worktrunk/linear-work",
+    "env": [
+      "LINEAR_ISSUE_BRANCH_NAME",
+      "LINEAR_ISSUE_IDENTIFIER",
+      "LINEAR_PROMPT",
+      "LINEAR_WORK_DIR"
+    ]
+  }
+}

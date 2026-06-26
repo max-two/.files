@@ -12,6 +12,7 @@ stow p10k
 stow git
 stow ghostty
 stow helix
+stow linear
 stow navi
 stow opencode
 stow worktrunk

@@ -77,6 +77,12 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - Online docs: https://worktrunk.dev/
   - Completions: `/opt/homebrew/share/zsh/site-functions/_wt`
 
+- **Linear → worktree** — Open a Linear issue straight into a new worktree + Zellij tab with Claude seeded on the ticket, reusing the worktrunk `wt switch` flow (no new terminal window).
+  - Linear config: `linear/dot-linear/coding-tools.json` → `~/.linear/coding-tools.json` (wires Linear's "Custom script" tool to the handler, passing issue data via `LINEAR_*` env vars).
+  - Handler: `worktrunk/scripts/worktrunk/linear-work` → `~/scripts/worktrunk/linear-work`. Linear runs it headlessly; it targets the live Zellij session, resolves the repo (`LINEAR_WORK_DIR` if set, else an fzf picker in a floating pane), and runs `wt switch --create <branch>`. The post-switch hook (`zellij-tab-open`) opens the tab; the ticket context rides in via `WT_CLAUDE_PROMPT` and is injected as the `claude` pane's argument.
+  - One-time Linear setup: Settings → Code & reviews → Configure coding tools → enable **Custom script**. Trigger via **Work on issue → Custom script** (or `⌘⌥.`). Preselect a working directory in Linear to skip the repo picker.
+  - Docs: https://linear.app/docs/open-issues-with-custom-scripts
+
 - **yazi** — TUI file manager.
   - Config: `yazi/dot-config/yazi/keymap.toml`
   - Scripts: `yazi/scripts/yazi/` → `~/scripts/yazi/`
@@ -119,3 +125,4 @@ Skip steps that don't apply (e.g. no stow package needed for a tool with no conf
 - Non-interactive Node access depends on `fnm default` — `.zshenv` prepends `~/.local/share/fnm/aliases/default/bin`, so changing the global default should be done with `fnm default <version>`.
 - Plugin order in `dot-zsh_plugins.txt` matters: `fzf-tab` before `autosuggestions`.
 - **Stow uses tree folding** — directories like `~/.config/zellij` may be symlinks to the stow source, not real directories. Running `rm` on files inside them deletes the stow source files. Never `rm` files in stow-managed paths to "clean up before restowing." If you need to restow, use `stow -R <package>` instead.
+- **Linear → worktree integration** has two non-obvious constraints. (1) It assumes a **single live Zellij session** — `linear-work` picks the most recent non-EXITED session, since Linear launches it with no `ZELLIJ` env of its own. (2) Linear *generates and may rewrite* `~/.linear/coding-tools.json`; it's stowed for reproducibility, but a Linear settings change can write through (or replace) the symlink. The prompt reaches Claude only because `linear-work` exports `WT_CLAUDE_PROMPT`, which the `post-switch` hook inherits — Zellij panes take the **server's** env, not the caller's, so the prompt is injected into the layout as a `claude` argument rather than passed via the environment.

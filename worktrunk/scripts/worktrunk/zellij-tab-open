@@ -3,6 +3,13 @@
 # Tab name is looked up from project-list, which is the source of truth for
 # how every known path is named.
 # Usage: zellij-tab-open <path>
+#
+# If WT_CLAUDE_PROMPT is set in the environment when a NEW tab is created, the
+# tab is opened from a copy of the `layout` layout with that prompt injected
+# as an argument to the `claude` pane (so Claude starts already working on
+# it). This is how the Linear integration (linear-work) seeds a worktree's
+# Claude session. The manual Alt+n flow leaves the var unset and is
+# unaffected, as is re-opening (focusing) an existing tab.
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
@@ -12,10 +19,54 @@ script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 name=$("$script_dir/project-list" | awk -F'\t' -v p="$path" '$2 == p { print $1; exit }')
 [ -z "$name" ] && name=$(basename "$path")
 
+# Locate the on-disk `layout` layout so we can build a prompt-injected copy.
+# In the headless Linear path the ZELLIJ_CONFIG_* vars aren't set, so fall
+# back to the stowed location.
+resolve_layout_file() {
+    if [ -n "${ZELLIJ_CONFIG_DIR:-}" ] && [ -f "$ZELLIJ_CONFIG_DIR/layouts/layout.kdl" ]; then
+        printf '%s' "$ZELLIJ_CONFIG_DIR/layouts/layout.kdl"
+        return 0
+    fi
+    if [ -n "${ZELLIJ_CONFIG_FILE:-}" ]; then
+        local f="$(dirname "$ZELLIJ_CONFIG_FILE")/layouts/layout.kdl"
+        [ -f "$f" ] && { printf '%s' "$f"; return 0; }
+    fi
+    [ -f "$HOME/.config/zellij/layouts/layout.kdl" ] \
+        && { printf '%s' "$HOME/.config/zellij/layouts/layout.kdl"; return 0; }
+    return 1
+}
+
+# Emit the `layout` KDL with $2 injected as an arg to the claude pane. The
+# prompt is wrapped in a KDL raw string (r#"..."#); the fence is made longer
+# than any run of '#' in the prompt so its closing delimiter can't appear
+# inside the text, letting arbitrary multi-line content pass through verbatim.
+build_layout_with_prompt() {
+    local file="$1" prompt="$2" maxrun fence
+    maxrun=$(printf '%s' "$prompt" | grep -oE '#+' | awk '{ if (length > m) m = length } END { print m + 0 }')
+    fence=$(printf '%*s' "$((maxrun + 1))" '' | tr ' ' '#')
+    # Emit the args as a child node on its own line (multi-line block form).
+    # zellij's KDL parser rejects an inline `{ args ... }` when the raw string
+    # spans newlines, but accepts the block form (as the hx pane already uses).
+    PROMPT="$prompt" FENCE="$fence" awk '
+        !injected && /command="claude"/ {
+            printf "%s {\n", $0
+            printf "            args r%s\"%s\"%s\n", ENVIRON["FENCE"], ENVIRON["PROMPT"], ENVIRON["FENCE"]
+            printf "        }\n"
+            injected = 1
+            next
+        }
+        { print }
+    ' "$file"
+}
+
 # zellij's go-to-tab-name returns 0 even if the tab doesn't exist
 # (zellij-org/zellij#3860), so check existence explicitly first.
 if zellij action query-tab-names 2>/dev/null | grep -qxF "$name"; then
     zellij action go-to-tab-name "$name"
+elif [ -n "${WT_CLAUDE_PROMPT:-}" ] && layout_file=$(resolve_layout_file); then
+    zellij action new-tab \
+        --layout-string "$(build_layout_with_prompt "$layout_file" "$WT_CLAUDE_PROMPT")" \
+        --name "$name" --cwd "$path"
 else
     zellij action new-tab --layout layout --name "$name" --cwd "$path"
 fi

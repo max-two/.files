@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# linear-work — entry point for Linear's "Open in coding tool → Custom script".
+#
+# Linear runs this headlessly (a minimal GUI environment, no TTY) when you
+# pick "Custom script" on an issue, passing issue data via LINEAR_* env vars
+# (wired up in ~/.linear/coding-tools.json). It creates a git worktree for the
+# issue's branch in the chosen repo and opens a Zellij tab — reusing the same
+# `wt switch` + post-switch hook chain as the Alt+n flow — with Claude started
+# on the ticket context.
+#
+# Repo selection:
+#   - LINEAR_WORK_DIR points at a git repo  -> use it directly (fully headless)
+#   - otherwise                             -> fzf repo picker in a floating pane
+#
+# The ticket context (LINEAR_PROMPT) reaches Claude via WT_CLAUDE_PROMPT, which
+# zellij-tab-open injects into the layout's claude pane. Nothing is written to
+# disk.
+#
+# Usage (set by Linear):  linear-work                       (reads LINEAR_* env)
+# Internal:               linear-work --pick BRANCH PROMPT   (picker pane)
+
+set -uo pipefail
+
+# Linear launches GUI subprocesses with a bare PATH; make our tools and the
+# worktrunk helper scripts resolve. Also covers the re-invoked picker pane.
+export PATH="/opt/homebrew/bin:$HOME/scripts/worktrunk:$HOME/scripts:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
+
+SELF=$(readlink -f "$0" 2>/dev/null || echo "$0")
+
+notify() {
+    osascript -e "display notification \"$1\" with title \"Linear → worktree\"" >/dev/null 2>&1 || true
+    echo "linear-work: $1" >&2
+}
+
+# Create (or re-open) the worktree for branch $2 in repo $1, then let the
+# worktrunk post-switch hook open/focus the Zellij tab. A brand-new branch
+# carries WT_CLAUDE_PROMPT through to Claude; re-opening an existing branch
+# does not (Claude is already running there), so it opens plainly.
+create_worktree() {
+    local repo="$1" branch="$2"
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
+        unset WT_CLAUDE_PROMPT
+        wt -C "$repo" switch --no-cd "$branch"
+    else
+        wt -C "$repo" switch --no-cd --create "$branch"
+    fi
+}
+
+# --- interactive picker mode (runs inside a floating Zellij pane) ----------
+# Panes don't inherit the headless caller's env, so branch + prompt arrive as
+# argv. Here we already live inside Zellij, so the session is implicit.
+if [ "${1:-}" = "--pick" ]; then
+    branch="${2:-}"
+    export WT_CLAUDE_PROMPT="${3:-}"
+    [ -z "$branch" ] && { echo "linear-work: no branch"; sleep 2; exit 1; }
+
+    selection=$(project-list | awk -F'\t' '
+        $3 == "path" { next }
+        {
+            name = $1; repo = name; sub(" / .*$", "", repo)
+            if (!(repo in seen)) { seen[repo] = 1; printf "%s\t%s\n", repo, $2 }
+        }
+    ' | fzf --delimiter=$'\t' --with-nth=1 --prompt='repo> ' \
+            --header="Linear branch: $branch")
+    [ -z "$selection" ] && exit 0
+    IFS=$'\t' read -r _ repo_path <<< "$selection"
+    create_worktree "$repo_path" "$branch"
+    exit 0
+fi
+
+# --- headless mode (invoked by Linear) -------------------------------------
+branch="${LINEAR_ISSUE_BRANCH_NAME:-}"
+[ -z "$branch" ] && { notify "No branch name provided by Linear"; exit 1; }
+
+# Target the live Zellij session so the worktrunk hooks act on it. zellij
+# tags exited sessions; the live one is the remaining entry (last = most
+# recent if there are several). Assumes a single active session, which is the
+# normal case for this setup.
+session=$(zellij list-sessions --no-formatting 2>/dev/null | grep -v 'EXITED' | tail -n1 | awk '{ print $1 }')
+[ -z "$session" ] && { notify "No running Zellij session to open the worktree in"; exit 1; }
+export ZELLIJ=0
+export ZELLIJ_SESSION_NAME="$session"
+
+export WT_CLAUDE_PROMPT="${LINEAR_PROMPT:-}"
+
+workdir="${LINEAR_WORK_DIR:-}"
+if [ -n "$workdir" ] && git -C "$workdir" rev-parse --git-dir >/dev/null 2>&1; then
+    create_worktree "$workdir" "$branch"
+else
+    # No valid preselected repo -> fzf picker in a floating pane. Pass branch +
+    # prompt as argv since the pane won't inherit our env.
+    zellij action new-pane --floating --close-on-exit --cwd "$HOME" -- \
+        "$SELF" --pick "$branch" "${LINEAR_PROMPT:-}"
+fi
