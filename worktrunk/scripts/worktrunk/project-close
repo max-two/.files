@@ -19,42 +19,61 @@ END {
     }
 }
 ' | fzf \
+    --multi \
     --delimiter=$'\t' \
     --with-nth=1 \
     --prompt='close> ' \
-    --header='enter: remove worktree  esc: cancel')
+    --header='tab: toggle  enter: remove selected  esc: cancel')
 
 [ -z "$selection" ] && exit 0
 
-IFS=$'\t' read -r _ worktree_path <<< "$selection"
+# Remove a single worktree. Pick a working dir for `wt remove` that is NOT the
+# worktree being removed: if we pass -C the target, worktrunk auto-switches us
+# out first (fires post-switch, spawns an unwanted tab). Instead, point -C at
+# the bare repo dir (for bare-repo worktrees) or the main-repo dir (for
+# regular-repo additional worktrees). Both work for any worktree of the repo,
+# including the last one — no sibling needed.
+# Returns non-zero if the worktree was left in place (failed or skipped).
+remove_worktree() {
+    local worktree_path="$1"
+    local branch target_parent safe_dir common_dir key
 
-# Pick a working dir for `wt remove` that is NOT the worktree being removed.
-# If we pass -C the target, worktrunk auto-switches us out first (fires
-# post-switch, spawns an unwanted tab). Instead, point -C at the bare repo
-# dir (for bare-repo worktrees) or the main-repo dir (for regular-repo
-# additional worktrees). Both work for any worktree of the repo, including
-# the last one — no sibling needed.
-branch=$(git -C "$worktree_path" branch --show-current 2>/dev/null)
-target_parent=$(dirname "$worktree_path")
+    branch=$(git -C "$worktree_path" branch --show-current 2>/dev/null)
+    target_parent=$(dirname "$worktree_path")
 
-if [ -d "$target_parent/.bare" ]; then
-    safe_dir="$target_parent"
-else
-    common_dir=$(git -C "$worktree_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
-    safe_dir="${common_dir%/.git}"
-    safe_dir="${safe_dir%/.bare}"
-fi
+    if [ -d "$target_parent/.bare" ]; then
+        safe_dir="$target_parent"
+    else
+        common_dir=$(git -C "$worktree_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+        safe_dir="${common_dir%/.git}"
+        safe_dir="${safe_dir%/.bare}"
+    fi
 
-if ! wt -C "$safe_dir" remove --yes "$branch"; then
+    if wt -C "$safe_dir" remove --yes "$branch"; then
+        return 0
+    fi
+
     echo ""
-    echo "Press [f] to force-remove (--force --force-delete), any other key to cancel."
-    read -rn 1 key
+    echo "Press [f] to force-remove '$branch' (--force --force-delete), any other key to skip."
+    # Read from the tty, not stdin — stdin is the selection list the loop below
+    # is iterating, so an unredirected read would swallow the next worktree.
+    read -rn 1 key </dev/tty
     echo ""
     if [ "$key" = "f" ] || [ "$key" = "F" ]; then
-        if ! wt -C "$safe_dir" remove --yes --force --force-delete "$branch"; then
-            echo ""
-            echo "(press any key to close)"
-            read -rn 1
-        fi
+        wt -C "$safe_dir" remove --yes --force --force-delete "$branch" && return 0
     fi
+
+    return 1
+}
+
+failed=0
+while IFS=$'\t' read -r _ worktree_path; do
+    [ -z "$worktree_path" ] && continue
+    remove_worktree "$worktree_path" || failed=1
+done <<< "$selection"
+
+if [ "$failed" = 1 ]; then
+    echo ""
+    echo "(some worktrees were left in place — press any key to close)"
+    read -rn 1 </dev/tty
 fi
