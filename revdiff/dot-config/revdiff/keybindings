@@ -1,0 +1,9 @@
+# Custom revdiff keybindings — deltas applied on top of the defaults
+# (revdiff loads Default() first, then these). Full template: revdiff --dump-keys
+#
+# Swap from defaults: brackets navigate annotations, parens navigate hunks.
+# (The default { } still also jump annotations; left in place as aliases.)
+map [ prev_annotation
+map ] next_annotation
+map ( prev_hunk
+map ) next_hunk

@@ -34,7 +34,7 @@ J / K
 Ctrl+d / Ctrl+u
 
 # Jump to previous / next change hunk
-[ / ]
+( / )
 
 # Jump to previous / next changed file
 p / n
@@ -55,7 +55,7 @@ d
 @
 
 # Jump to previous / next annotation (across files)
-{ / }
+[ / ]
 
 # Toggle compact view (hunks + context, GitHub-style)
 C
