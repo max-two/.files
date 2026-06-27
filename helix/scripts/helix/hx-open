@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Open <file> in Helix in a new Zellij tab.
+#
+# This is a $LAUNCH_EDITOR / $REACT_EDITOR handler for the "open in editor"
+# feature of dev servers (Storybook, Vite, webpack, react-dev-utils). Those go
+# through the `launch-editor` npm package, whose editor resolution order is:
+#   1. $LAUNCH_EDITOR / $REACT_EDITOR   <- this script
+#   2. scan running processes, pick a known GUI editor (e.g. VS Code)
+#   3. $VISUAL
+#   4. $EDITOR
+# So a running VS Code window is chosen before $EDITOR=hx is ever consulted.
+# Only $LAUNCH_EDITOR / $REACT_EDITOR jump the queue. launch-editor would then
+# spawn the editor with the dev server's stdio inherited; for a TUI like Helix
+# that hijacks the dev-server pane, so we hand Helix its own Zellij tab instead.
+#
+# launch-editor passes only the file path for editors it doesn't special-case,
+# so no line number is forwarded.
+set -euo pipefail
+
+# Only meaningful inside a Zellij session (the dev server inherits $ZELLIJ from
+# the pane it runs in). Outside Zellij there's no tab to open into.
+[ -z "${ZELLIJ:-}" ] && exit 0
+[ "$#" -eq 0 ] && exit 0
+
+file="$1"
+
+# launch-editor hands us a path relative to the dev server's working directory
+# (the project root it was started from) — e.g. ./src/Foo.stories.tsx. Our new
+# Zellij tab does NOT inherit that cwd, so a relative path would resolve against
+# the wrong base. Resolve to absolute against $PWD (inherited from the spawning
+# dev server), stripping any leading ./. Absolute paths pass through unchanged.
+case "$file" in
+    /*) ;;
+    *) file="$PWD/${file#./}" ;;
+esac
+
+dir=$(dirname "$file")
+
+# Escape the path for embedding in a KDL double-quoted string.
+esc=${file//\\/\\\\}
+esc=${esc//\"/\\\"}
+
+zellij action new-tab \
+    --name "hx: $(basename "$file")" \
+    --cwd "$dir" \
+    --layout-string "layout {
+    tab {
+        pane size=1 borderless=true {
+            plugin location=\"tab-bar\"
+        }
+        pane command=\"hx\" focus=true close_on_exit=true {
+            args \"$esc\"
+        }
+        pane size=1 borderless=true {
+            plugin location=\"status-bar\"
+        }
+    }
+}"

@@ -39,6 +39,12 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Make man pages colorful
 # Default editor
 export EDITOR="hx"
 
+# Dev-server "open in editor" (Storybook/Vite/webpack) -> Helix in a new Zellij
+# tab. The `launch-editor` package these use scans for a running GUI editor
+# (e.g. VS Code) before it ever checks $EDITOR; only these jump that queue.
+export LAUNCH_EDITOR="$HOME/scripts/helix/hx-open"
+export REACT_EDITOR="$LAUNCH_EDITOR"
+
 # LSP
 export ENABLE_LSP_TOOL=1
 
