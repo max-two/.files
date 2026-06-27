@@ -36,3 +36,6 @@ brew brew-file
 
 tap anomalyco/tap
 brew opencode
+
+tap umputun/apps
+brew revdiff

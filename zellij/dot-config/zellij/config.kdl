@@ -61,6 +61,18 @@ keybinds {
                 close_on_exit true
             }
         }
+        // revdiff: instant floating review of uncommitted changes (bare `revdiff`,
+        // no smart ref-detection — that lives in the /revdiff skill, not the binary).
+        // Opens in the focused pane's cwd, so trigger it from a pane sitting in the repo.
+        // On quit, annotations auto-save to ~/.config/revdiff/history/<repo>/; then tell
+        // Claude "apply my latest revdiff annotations" to ingest them (no /revdiff
+        // round-trip needed to open the panel).
+        bind "Alt r" {
+            Run "revdiff" {
+                floating true
+                close_on_exit true
+            }
+        }
         bind "Ctrl Shift x" {
             Run "zellij" "kill-all-sessions" "--yes" {
                 close_on_exit true
