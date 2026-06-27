@@ -3,7 +3,7 @@
 ; staged = false
 
 ; show untracked files in the tree
-; untracked = false
+untracked = true
 
 ; file tree panel width in units (1-10, default 2 of 10)
 ; tree-width = 2
@@ -33,7 +33,7 @@
 ; collapsed = false
 
 ; start in compact diff mode (small context around changes)
-; compact = false
+compact = true
 
 ; number of context lines around changes when in compact mode
 ; compact-context = 5
@@ -42,16 +42,16 @@
 ; cross-file-hunks = false
 
 ; show line numbers in diff gutter
-; line-numbers = false
+line-numbers = true
 
 ; show blame gutter
 ; blame = false
 
 ; highlight intra-line word-level changes in paired add/remove lines
-; word-diff = false
+word-diff = true
 
 ; prefix shown before annotation lines
-; annotation-marker = 💬
+annotation-marker = ✎
 
 ; exit 10 when annotations are produced
 ; exit-code-on-annotations = false
@@ -72,7 +72,7 @@
 ; history-dir =
 
 ; load theme from themes directory
-; theme =
+theme = everforest
 
 [color options]
 ; active pane borders and directory names

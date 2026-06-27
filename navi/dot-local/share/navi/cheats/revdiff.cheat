@@ -1,0 +1,100 @@
+% revdiff
+
+# Review uncommitted changes
+revdiff
+
+# Review against a branch
+revdiff <branch>
+
+# Review last commit
+revdiff HEAD~1
+
+# Review staged changes
+revdiff --staged
+
+# Browse all tracked files (annotate anything)
+revdiff --all-files
+
+# Review a single file (context-only)
+revdiff --only=<file>
+
+# Review a piped diff (e.g. a PR)
+gh pr diff <pr> | revdiff --stdin
+
+# Move between files (tree) / scroll (diff)
+j / k
+
+# Switch file tree <-> diff pane (or h / l)
+Tab
+
+# Scroll the diff from either pane
+J / K
+
+# Half-page down / up
+Ctrl+d / Ctrl+u
+
+# Jump to previous / next change hunk
+[ / ]
+
+# Jump to previous / next changed file
+p / n
+
+# Annotate current line (then type note, Enter to save)
+a
+
+# Add a file-level annotation
+A
+
+# Open $EDITOR for a multi-line annotation
+Ctrl+E
+
+# Delete annotation under cursor
+d
+
+# List all annotations and jump to one
+@
+
+# Jump to previous / next annotation (across files)
+{ / }
+
+# Toggle compact view (hunks + context, GitHub-style)
+C
+
+# Toggle collapsed view (final text with change markers)
+v
+
+# Toggle word wrap
+w
+
+# Toggle line numbers
+L
+
+# Toggle blame gutter (author + commit age)
+B
+
+# Toggle intra-line word-diff highlight
+W
+
+# Toggle file tree pane (full-width diff)
+t
+
+# Open theme selector (live preview)
+T
+
+# Toggle info popup (scope and stats)
+i
+
+# Toggle help overlay (all keybindings)
+?
+
+# Start search in the diff
+/
+
+# Next / previous search match
+n / N
+
+# Quit and emit annotations (auto-saves to history)
+q
+
+# Discard all annotations and quit
+Q

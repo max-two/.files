@@ -1,0 +1,26 @@
+# name: everforest
+# description: Everforest Dark (Hard) — matches Ghostty and Zellij
+# author: max
+
+chroma-style = evergarden
+color-accent = #a7c080
+color-border = #414b50
+color-normal = #d3c6aa
+color-muted = #859289
+color-selected-fg = #1e2326
+color-selected-bg = #a7c080
+color-annotation = #dbbc7f
+color-cursor-fg = #a7c080
+color-cursor-bg = #1e2326
+color-add-fg = #a7c080
+color-add-bg = #3c4841
+color-remove-fg = #e67e80
+color-remove-bg = #493b40
+color-modify-fg = #dbbc7f
+color-modify-bg = #45443c
+color-tree-bg = #1e2326
+color-diff-bg = #1e2326
+color-status-fg = #1e2326
+color-status-bg = #a7c080
+color-search-fg = #1e2326
+color-search-bg = #dbbc7f
