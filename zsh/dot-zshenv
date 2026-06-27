@@ -18,3 +18,7 @@ export WORKTRUNK_SYSTEM_CONFIG_PATH="$HOME/.config/worktrunk/local.toml"
 
 # Vite+ bin (https://viteplus.dev)
 . "$HOME/.vite-plus/env"
+
+# Machine-local env-layer overrides (e.g. work-repo registry tokens) — untracked,
+# optional, parallels ~/.localrc. Keeps machine-specific config out of these dotfiles.
+[[ -f $HOME/.localenv ]] && source $HOME/.localenv

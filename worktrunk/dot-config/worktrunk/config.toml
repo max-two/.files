@@ -1,10 +1,14 @@
 worktree-path = "{{ repo_path }}/../{{ branch | sanitize }}"
 
-[pre-start]
+[[pre-start]]
 sync-base = "git fetch origin {{ base }} && git rebase origin/{{ base }}"
 
+[[pre-start]]
+# Install deps on worktree creation for repos that use Vite+ (declare vite-plus in a
+# manifest). Auth comes from NODE_AUTH_TOKEN in the env (~/.localenv); no-ops elsewhere.
+vp-install = 'if grep -qs vite-plus package.json pnpm-workspace.yaml; then vp install; fi'
+
 [post-start]
-copy = "wt step copy-ignored"
 zoxide-prime = "git -C {{ worktree_path }} ls-tree -r -d --name-only HEAD | awk -F/ -v wt={{ worktree_path }} 'NF <= 4 { print wt \"/\" $0 }' | tr '\\n' '\\0' | xargs -0 zoxide add"
 
 [post-switch]
