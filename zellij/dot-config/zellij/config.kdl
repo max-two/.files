@@ -19,6 +19,16 @@ load_plugins {
         completed_icon "✓"
         waiting_icon "●"
     }
+
+    // Built-in click-to-open (zellij:link): hover a file path in any pane to
+    // reveal it (italic + underline + "Open" tooltip), then alt+click to open
+    // it in $EDITOR (hx) as a floating pane, jumping to :line. Directories open
+    // the filepicker instead. Must be listed explicitly: a user `load_plugins`
+    // block REPLACES the default one (background_plugins are not merged across
+    // configs), which would otherwise silently drop this built-in. Loads on
+    // session start and prompts once for filesystem + app-state permissions.
+    // If paths don't highlight on hover, try adding `advanced_mouse_actions true`.
+    "zellij:link"
 }
 
 // Keybinds
