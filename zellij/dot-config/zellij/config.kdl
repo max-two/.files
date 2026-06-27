@@ -5,6 +5,22 @@
 // Use Ghostty's native scrollback instead of zellij's
 scrollback_editor "none"
 
+// Background notification plugin (zellij-attention) — badges this tab when Claude
+// Code wants attention. Driven by Claude Code hooks in ~/.claude/settings.json via
+// `zellij pipe`. The plugin exposes only two slots, "completed" and "waiting", which
+// we map to:
+//   completed_icon "✓" ← Claude is idle / your turn         (Notification:idle_prompt)
+//   waiting_icon   "●" ← Claude needs a permission decision (Notification:permission_prompt)
+// Icons auto-clear when you focus the pane. Swap glyphs freely (e.g. ✅ / 🔴 for color).
+// Loaded from a pinned release; bump the version in the URL to update.
+load_plugins {
+    "https://github.com/KiryuuLight/zellij-attention/releases/download/v0.3.1/zellij-attention.wasm" {
+        enabled "true"
+        completed_icon "✓"
+        waiting_icon "●"
+    }
+}
+
 // Keybinds
 keybinds {
     shared_except "locked" {

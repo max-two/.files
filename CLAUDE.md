@@ -95,6 +95,12 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - No man page — use `zellij --help` and `zellij setup --dump-config` for the full default config
   - Completions: `/opt/homebrew/share/zsh/site-functions/_zellij`
 
+- **zellij-attention** — Background Zellij plugin that appends a notification icon to a tab name when a pane wants attention. Used here for Claude Code "your turn" / "needs approval" badges.
+  - Loaded via `load_plugins` in `zellij/dot-config/zellij/config.kdl` from a pinned release URL — no `.wasm` is committed; Zellij fetches and caches it on first run. Bump the version by editing the tag in the URL.
+  - Triggered by Claude Code **hooks in the global `~/.claude/settings.json`** (not in this repo): the `Notification` hook with matcher `idle_prompt` fires the `completed` slot (✓ = your turn), and `permission_prompt` fires the `waiting` slot (● = needs approval). Each runs `zellij pipe --name "zellij-attention::<slot>::$ZELLIJ_PANE_ID"`.
+  - Icons auto-clear when you focus the pane. First launch shows a one-time Zellij plugin-permission prompt — grant it.
+  - Repo: https://github.com/KiryuuLight/zellij-attention
+
 ## Adding a New Tool
 
 Checklist when adding a new CLI tool or app to this setup:
@@ -126,3 +132,4 @@ Skip steps that don't apply (e.g. no stow package needed for a tool with no conf
 - Plugin order in `dot-zsh_plugins.txt` matters: `fzf-tab` before `autosuggestions`.
 - **Stow uses tree folding** — directories like `~/.config/zellij` may be symlinks to the stow source, not real directories. Running `rm` on files inside them deletes the stow source files. Never `rm` files in stow-managed paths to "clean up before restowing." If you need to restow, use `stow -R <package>` instead.
 - **Linear → worktree integration** has two non-obvious constraints. (1) It assumes a **single live Zellij session** — `linear-work` picks the most recent non-EXITED session, since Linear launches it with no `ZELLIJ` env of its own. (2) Linear *generates and may rewrite* `~/.linear/coding-tools.json`; it's stowed for reproducibility, but a Linear settings change can write through (or replace) the symlink. The prompt reaches Claude only because `linear-work` exports `WT_CLAUDE_PROMPT`, which the `post-switch` hook inherits — Zellij panes take the **server's** env, not the caller's, so the prompt is injected into the layout as a `claude` argument rather than passed via the environment.
+- **zellij-attention icon slots are semantically inverted from their names.** The plugin only exposes `completed_icon` and `waiting_icon`. We map `completed_icon` (✓) to Claude being *idle / your turn* (`Notification:idle_prompt`) and `waiting_icon` (●) to Claude *awaiting a permission decision* (`Notification:permission_prompt`) — so "completed" here does **not** mean "task finished". The plugin **load** lives in this repo's `config.kdl`, but the **triggering hooks** live in the global `~/.claude/settings.json` (outside this repo); changing one without the other breaks the badges.
