@@ -1,5 +1,8 @@
 theme = "everforest_dark"
 
+[editor.file-picker]
+hidden = false
+
 [keys.normal.space]
 M = ":sh zellij run --close-on-exit --name glow --direction right -- glow -p %{buffer_name}"
 e = [
