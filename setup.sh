@@ -17,6 +17,7 @@ stow navi
 stow opencode
 # --no-folding: revdiff writes bundled themes into ~/.config/revdiff at runtime, so keep it a real dir (not a folded symlink into the repo)
 stow --no-folding revdiff
+stow storybook
 stow worktrunk
 stow yazi
 stow zellij

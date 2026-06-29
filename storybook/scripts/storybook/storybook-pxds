@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Summon the rosetta pxds Storybook in a per-tab floating Zellij pane.
+#
+# Floating panes are per-tab in Zellij, so each worktree tab gets its own
+# Storybook:
+#   - No Storybook pane in this tab yet: pick the first free port from 6006 up
+#     and launch Storybook in a floating pane. A *free* port means no "port in
+#     use?" prompt, so Storybook opens the browser itself.
+#   - Storybook already exists in this tab: just reveal the floating layer
+#     (it keeps running on its own port; we leave it be).
+#
+# "Summon" semantics only — this never hides. To dismiss the floating layer use
+# Zellij's native floating-pane toggle (Alt+f). This is deliberate: a one-key
+# launch-or-toggle would have to read the *prior* floating-pane visibility, but
+# this dispatcher is itself launched floating (see the Alt+s bind), which forces
+# the floating layer visible — so prior visibility can't be read. By only ever
+# ending in "shown" we sidestep that, and the floating dispatcher never touches
+# your tiled work pane (the reason in_place was wrong: it suspended/replaced the
+# focused pane).
+#
+# We find OUR OWN tab via $ZELLIJ_PANE_ID (Zellij sets it on every spawned pane;
+# it equals PaneInfo.id). We can't use is_focused to find the active tab:
+# PaneInfo.is_focused is "focused in its layer", so every tab has focused panes
+# and `first` could land on the wrong worktree tab. Detect Storybook by the
+# launched pane's --name ("storybook"), excluding our own pane id.
+#
+# Bound to Alt+s in zellij/dot-config/zellij/config.kdl. Hardcoded to the
+# rosetta pxds Storybook for now (the --cwd/package can become dynamic later).
+# rosetta is a Vite+ workspace, so Storybook runs via `vp exec` — vp is on the
+# non-interactive PATH (~/.zshenv sources ~/.vite-plus/env); pnpm is not.
+
+set -euo pipefail
+
+[ -z "${ZELLIJ:-}" ] && exit 0
+
+PXDS=/Users/max.mckinley/code/rosetta/main/packages/pxds
+PID="${ZELLIJ_PANE_ID:--1}" # our own pane id, for locating our tab + self-exclusion
+
+# Is there already a Storybook floating pane in THIS tab (our pane's tab)?
+if zellij action list-panes --json 2>/dev/null | jq -e --argjson pid "$PID" '
+        (map(select(.id == $pid and (.is_plugin | not))) | first | .tab_id) as $t
+        | ($t != null)
+          and any(.[]; .tab_id == $t
+                       and .is_floating
+                       and .id != $pid
+                       and .title == "storybook")
+    ' >/dev/null 2>&1; then
+    # Already running here -> ensure the floating layer is shown (the dispatcher
+    # launch already revealed it; this is just explicit and idempotent).
+    zellij action show-floating-panes
+else
+    # Not running here -> launch on the first free port from 6006 up.
+    port=6006
+    while nc -z 127.0.0.1 "$port" 2>/dev/null; do port=$((port + 1)); done
+    zellij run --floating --name storybook --cwd "$PXDS" -- \
+        zsh -c "vp exec storybook dev -p $port"
+fi

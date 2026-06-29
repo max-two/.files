@@ -83,6 +83,18 @@ keybinds {
                 close_on_exit true
             }
         }
+        // Storybook (rosetta pxds), per tab — "summon" semantics. First press in a
+        // tab starts Storybook on the first free port from 6006 (it opens the
+        // browser itself) in a floating pane; later presses re-show that tab's
+        // pane. Dismiss with the native floating-pane toggle (Alt+f). The
+        // dispatcher itself runs floating (NOT in_place — that suspended/replaced
+        // the focused work pane); see ~/scripts/storybook/storybook-pxds.
+        bind "Alt s" {
+            Run "storybook-pxds" {
+                floating true
+                close_on_exit true
+            }
+        }
         bind "Ctrl Shift x" {
             Run "zellij" "kill-all-sessions" "--yes" {
                 close_on_exit true
