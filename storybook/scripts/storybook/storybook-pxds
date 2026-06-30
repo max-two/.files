@@ -64,6 +64,9 @@ else
     # worktree's pxds package.
     port=6006
     while nc -z 127.0.0.1 "$port" 2>/dev/null; do port=$((port + 1)); done
-    zellij run --floating --name storybook --cwd "$pxds" -- \
-        zsh -c "vp exec storybook dev -p $port"
+    # Turn THIS dispatcher pane into Storybook via exec, so no second pane is
+    # spawned (the dispatcher *becomes* the server pane). The keybind launched us
+    # floating + sized + named "storybook" (no close_on_exit, so the pane persists
+    # if the server stops) -- so the detection above finds us by title on resummon.
+    cd "$pxds" && exec zsh -c "vp exec storybook dev -p $port"
 fi

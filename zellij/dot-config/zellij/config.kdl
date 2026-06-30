@@ -119,24 +119,40 @@ keybinds {
         bind "Ctrl /" {
             Run "navi" "--print" {
                 floating true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
                 close_on_exit true
             }
         }
         bind "Alt o" {
             Run "project-open" {
                 floating true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
                 close_on_exit true
             }
         }
         bind "Alt w" {
             Run "project-new" {
                 floating true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
                 close_on_exit true
             }
         }
         bind "Alt x" {
             Run "project-close" {
                 floating true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
                 close_on_exit true
             }
         }
@@ -149,6 +165,10 @@ keybinds {
         bind "Alt r" {
             Run "revdiff" {
                 floating true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
                 close_on_exit true
             }
         }
@@ -162,8 +182,12 @@ keybinds {
         // the focused work pane); see ~/scripts/storybook/storybook-pxds.
         bind "Alt s" {
             Run "storybook-pxds" {
+                name "storybook"
                 floating true
-                close_on_exit true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
             }
         }
         // Scratchpad note for the CURRENT worktree, per tab — "summon" semantics.
@@ -176,7 +200,12 @@ keybinds {
         // ~/scripts/notes/notes.
         bind "Alt n" {
             Run "notes" {
+                name "notes"
                 floating true
+                x "17%"
+                y "17%"
+                width "66%"
+                height "66%"
                 close_on_exit true
             }
         }

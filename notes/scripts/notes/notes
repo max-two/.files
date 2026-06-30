@@ -61,8 +61,10 @@ if zellij action list-panes --json 2>/dev/null | jq -e --argjson pid "$PID" '
     # dispatcher launch already revealed it).
     zellij action show-floating-panes
 else
-    # Not open here -> open Helix on this worktree's note in a floating pane.
-    # --close-on-exit so quitting Helix (:wq / :q) closes the pane instead of
-    # leaving it sitting on the command's exit status.
-    zellij run --floating --close-on-exit --name notes --cwd "$root" -- hx "$note"
+    # Not open here -> turn THIS dispatcher pane into Helix via exec, so no
+    # second pane is spawned (the dispatcher pane *becomes* the editor). The
+    # keybind launched us floating + sized + named "notes", and closes the pane
+    # when Helix exits (:wq) via its close_on_exit -- so the detection above finds
+    # us by title ("notes") on the next summon.
+    cd "$root" && exec hx "$note"
 fi
