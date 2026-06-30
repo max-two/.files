@@ -5,6 +5,7 @@ tap homebrew/core
 brew antidote
 brew bat
 brew biome
+brew difftastic
 brew direnv
 brew defuddle
 brew eza

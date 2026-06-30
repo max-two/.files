@@ -60,6 +60,11 @@ When editing configuration for a tool, read its docs before making changes. Don'
   - Online docs: https://github.com/charmbracelet/glow
   - Bound in Helix as `space M` to open the current file in a new zellij pane (`glow -p`)
 
+- **difftastic** (`difft`) — Structural (syntax-aware) diff, wired in as git's default external diff.
+  - Config: `git/dot-gitconfig` — `[diff] external = difft` makes `git diff` use difftastic automatically. git only hands the external diff to `git diff` (not `show`/`log -p`), so the same file adds aliases `lg` (= `log -p`) and `shw` (= `show`) that pass `-c diff.external=difft … --ext-diff` to re-enable difftastic for those subcommands. Opt a single diff back out with `git diff --no-ext-diff`. Safe on git ≥ 2.43.2 (this machine is 2.50.x); earlier git can crash on external diff when a file's permissions change.
+  - No man page — use `difft --help`.
+  - Online docs: https://difftastic.wilfred.me.uk/ (git integration: https://difftastic.wilfred.me.uk/git.html)
+
 - **revdiff** — Terminal UI for reviewing diffs/files with inline annotations; emits annotations to stdout on quit for piping into AI agents. Supports git, hg, and jj.
   - Config: `revdiff/dot-config/revdiff/config` (INI). Customized from the `--dump-config` template: `compact` (GitHub-style hunks + context), `line-numbers`, `word-diff`, `untracked` shown, monochrome `✎` annotation marker, and `theme = everforest`. The theme is a stowed file — `revdiff/dot-config/revdiff/themes/everforest` (`chroma-style = evergarden` + Everforest Dark Hard `color-*`, matching Ghostty/Zellij). The 8 bundled themes are written to `~/.config/revdiff/themes/` at runtime (everforest is symlinked in alongside them) — see Things to Know. Keybindings are a stowed delta file — `revdiff/dot-config/revdiff/keybindings` (template via `revdiff --dump-keys`) — remapping `[`/`]` → prev/next annotation and `(`/`)` → prev/next hunk (deltas on the defaults).
   - No man page — use `revdiff --help`

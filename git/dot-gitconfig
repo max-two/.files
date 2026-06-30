@@ -8,6 +8,9 @@
 [color]
     ui = auto
 
+[diff]
+    external = difft
+
 [alias]
     ad = add --all
     cm = commit -m
@@ -18,10 +21,11 @@
     sh = push
     ll = pull
     st = status
-    lg = log
+    lg = -c diff.external=difft log -p --ext-diff
 	rs = restore
 	unstage = restore --staged
     undo = reset --soft HEAD~1
+    shw = -c diff.external=difft show --ext-diff
     mm = "!git stash push -u && git fetch origin master && git merge origin/master"
     nb = "!git switch master && git pull && git switch -c"
 	nuke = "!git restore --staged . && git restore . && git clean -fd"
