@@ -77,21 +77,3 @@ Alt+h
 
 # Next tab (direct)
 Alt+l
-
-# Open project (interactive picker)
-Alt+o
-
-# New worktree (pick repo, then enter branch name)
-Alt+n
-
-# Close worktree (remove + close tab via worktrunk post-remove)
-Alt+x
-
-# Navi cheatsheet
-Ctrl+/
-
-# Kill all zellij sessions
-Ctrl+Shift+x
-
-# Force reload zellij config (touch file to trigger watcher)
-Ctrl+Shift+r

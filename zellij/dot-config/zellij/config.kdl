@@ -59,7 +59,7 @@ keybinds {
                 close_on_exit true
             }
         }
-        bind "Alt n" {
+        bind "Alt w" {
             Run "project-new" {
                 floating true
                 close_on_exit true
@@ -105,7 +105,7 @@ keybinds {
         // ~/notes.local.md outside a repo. The dispatcher runs floating (NOT
         // in_place — that suspended/replaced the focused work pane); see
         // ~/scripts/notes/notes.
-        bind "Alt m" {
+        bind "Alt n" {
             Run "notes" {
                 floating true
                 close_on_exit true
