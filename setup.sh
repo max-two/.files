@@ -14,6 +14,7 @@ stow ghostty
 stow helix
 stow linear
 stow navi
+stow notes
 stow opencode
 # --no-folding: revdiff writes bundled themes into ~/.config/revdiff at runtime, so keep it a real dir (not a folded symlink into the repo)
 stow --no-folding revdiff

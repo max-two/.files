@@ -97,6 +97,20 @@ keybinds {
                 close_on_exit true
             }
         }
+        // Scratchpad note for the CURRENT worktree, per tab — "summon" semantics.
+        // Opens Helix on <worktree>/notes.local.md (gitignored via the global core
+        // excludes, auto-deleted with the worktree on `wt merge`) in a floating
+        // pane; re-press reveals that tab's existing note buffer. Dismiss by
+        // quitting Helix (:wq) or hiding the floating layer (Alt+f). Falls back to
+        // ~/notes.local.md outside a repo. The dispatcher runs floating (NOT
+        // in_place — that suspended/replaced the focused work pane); see
+        // ~/scripts/notes/notes.
+        bind "Alt m" {
+            Run "notes" {
+                floating true
+                close_on_exit true
+            }
+        }
         bind "Ctrl Shift x" {
             Run "zellij" "kill-all-sessions" "--yes" {
                 close_on_exit true
