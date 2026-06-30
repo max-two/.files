@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# zjstatus battery widget (rendermode "dynamic"): emits a Nerd Font battery glyph
+# + percentage, wrapped in a zjstatus #[fg=..] colour directive that changes by
+# charge range. Glyphs match the p10k battery segment's MDI family.
+#   plugged in   -> 󰂄  blue
+#   >= 80%       -> 󰁹  green
+#   21-79%       -> 󰁾  yellow
+#   <= 20%       -> 󰂎  red
+batt=$(pmset -g batt 2>/dev/null)
+[ -z "$batt" ] && exit 0
+
+pct=$(printf '%s\n' "$batt" | grep -Eo '[0-9]+%' | head -1 | tr -d '%')
+[ -z "$pct" ] && exit 0
+
+if printf '%s\n' "$batt" | grep -q "'AC Power'"; then
+    color="#7fbbb3"; icon="󰂄"
+elif [ "$pct" -ge 80 ]; then
+    color="#a7c080"; icon="󰁹"
+elif [ "$pct" -gt 20 ]; then
+    color="#dbbc7f"; icon="󰁾"
+else
+    color="#e67e80"; icon="󰂎"
+fi
+
+printf '#[fg=%s,bg=#1e2326] %s %s%% ' "$color" "$icon" "$pct"

@@ -5,6 +5,75 @@
 // Use Ghostty's native scrollback instead of zellij's
 scrollback_editor "none"
 
+// Plugin aliases. The built-in aliases below are reproduced verbatim from
+// `zellij setup --dump-config`: a user `plugins` block does NOT merge with the
+// defaults, so omitting them would break tab-bar/compact-bar/session-manager/etc.
+// The `zjstatus` alias adds a custom status bar and carries its full config here
+// (single source of truth) so both layouts can reference it by the bare name.
+// Editing aliases requires a session restart to take effect.
+plugins {
+    tab-bar location="zellij:tab-bar"
+    status-bar location="zellij:status-bar"
+    strider location="zellij:strider"
+    compact-bar location="zellij:compact-bar"
+    session-manager location="zellij:session-manager"
+    welcome-screen location="zellij:session-manager" {
+        welcome_screen true
+    }
+    filepicker location="zellij:strider" {
+        cwd "/"
+    }
+    configuration location="zellij:configuration"
+    plugin-manager location="zellij:plugin-manager"
+    about location="zellij:about"
+
+    // Custom status bar (dj95/zjstatus), pinned to v0.23.0 — built against
+    // zellij-tile 0.44.1, matching this machine's zellij 0.44.x. Active tab =
+    // green-filled capsule with rounded ends (echoing the rounded pane borders);
+    // inactive = dim grey text. Tabs left-aligned like the old compact-bar.
+    // Everforest colours: bg #1e2326, green #a7c080, dim grey #7a8478.
+    zjstatus location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {
+        // Left pad (1 col) so bar content is inset like the rounded pane borders.
+        format_left  "#[bg=#1e2326] {mode}{tabs}"
+        format_right "{command_battery}{datetime}"
+        format_space "#[bg=#1e2326]"
+
+        // Tabs: active = green-filled rounded pill, inactive = dim grey text (no index).
+        tab_normal    "#[fg=#7a8478,bg=#1e2326] {name} "
+        tab_active    "#[fg=#a7c080,bg=#1e2326]#[fg=#1e2326,bg=#a7c080,bold]{name}#[fg=#a7c080,bg=#1e2326]"
+        tab_separator "#[bg=#1e2326] "
+
+        // Mode indicator: SQUARE block (distinct from the rounded tab pills); NORMAL is
+        // grey, not the active green. Labels centred in an 8-col field => constant width.
+        mode_normal        "#[fg=#1e2326,bg=#7a8478,bold] NORMAL #[bg=#1e2326]  "
+        mode_locked        "#[fg=#1e2326,bg=#e67e80,bold] LOCKED #[bg=#1e2326]  "
+        mode_resize        "#[fg=#1e2326,bg=#e69875,bold] RESIZE #[bg=#1e2326]  "
+        mode_pane          "#[fg=#1e2326,bg=#7fbbb3,bold]  PANE  #[bg=#1e2326]  "
+        mode_tab           "#[fg=#1e2326,bg=#7fbbb3,bold]  TAB   #[bg=#1e2326]  "
+        mode_scroll        "#[fg=#1e2326,bg=#dbbc7f,bold] SCROLL #[bg=#1e2326]  "
+        mode_search        "#[fg=#1e2326,bg=#dbbc7f,bold] SEARCH #[bg=#1e2326]  "
+        mode_enter_search  "#[fg=#1e2326,bg=#dbbc7f,bold] SEARCH #[bg=#1e2326]  "
+        mode_rename_tab    "#[fg=#1e2326,bg=#d699b6,bold] RENAME #[bg=#1e2326]  "
+        mode_rename_pane   "#[fg=#1e2326,bg=#d699b6,bold] RENAME #[bg=#1e2326]  "
+        mode_session       "#[fg=#1e2326,bg=#d699b6,bold]SESSION #[bg=#1e2326]  "
+        mode_move          "#[fg=#1e2326,bg=#e69875,bold]  MOVE  #[bg=#1e2326]  "
+        mode_tmux          "#[fg=#1e2326,bg=#e69875,bold]  TMUX  #[bg=#1e2326]  "
+        mode_prompt        "#[fg=#1e2326,bg=#dbbc7f,bold] PROMPT #[bg=#1e2326]  "
+
+        // Clock, far right. WASM cannot read the system TZ, so it is pinned.
+        datetime          "#[fg=#7a8478,bg=#1e2326] {format} "
+        datetime_format   "%-I:%M%P"
+        datetime_timezone "America/New_York"
+
+        // Battery: script emits a Nerd Font glyph + %, self-coloured by charge range
+        // (green/yellow/red, blue when charging). rendermode "dynamic" renders its #[..].
+        command_battery_command    "/Users/max.mckinley/scripts/battery/battery-status"
+        command_battery_format     "{stdout}"
+        command_battery_interval   "60"
+        command_battery_rendermode "dynamic"
+    }
+}
+
 // Background notification plugin (zellij-attention) — badges this tab when Claude
 // Code wants attention. Driven by Claude Code hooks in ~/.claude/settings.json via
 // `zellij pipe`. The plugin exposes only two slots, "completed" and "waiting", which
@@ -140,6 +209,14 @@ themes {
         magenta 214 153 182 // #d699b6
         orange 230 152 117  // #e69875
         cyan 131 192 146    // #83c092
+    }
+}
+
+// Pane frame appearance
+ui {
+    pane_frames {
+        rounded_corners true   // soften the frame corners
+        hide_session_name true // drop the session name from the frame ribbon
     }
 }
 

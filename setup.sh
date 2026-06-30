@@ -10,6 +10,7 @@ stow brewfile
 stow zsh
 stow p10k
 stow git
+stow battery
 stow ghostty
 stow helix
 stow linear

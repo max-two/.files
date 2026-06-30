@@ -1,9 +1,8 @@
+// Worktree/Claude tab layout (opened by worktrunk's zellij-tab-open). Uses the
+// custom `zjstatus` status bar (alias + config defined in config.kdl) to match
+// the default layout.
 layout {
     tab {
-        pane size=1 borderless=true {
-            plugin location="tab-bar"
-        }
-
         pane split_direction="vertical" {
             pane command="claude" size="50%" focus=true close_on_exit=true
             pane stacked=true size="50%" {
@@ -15,7 +14,7 @@ layout {
         }
 
         pane size=1 borderless=true {
-            plugin location="status-bar"
+            plugin location="zjstatus"
         }
     }
 }
