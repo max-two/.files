@@ -188,6 +188,7 @@ keybinds {
                 y "17%"
                 width "66%"
                 height "66%"
+                close_on_exit true
             }
         }
         // Scratchpad note for the CURRENT worktree, per tab — "summon" semantics.

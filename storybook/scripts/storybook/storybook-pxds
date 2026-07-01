@@ -66,7 +66,8 @@ else
     while nc -z 127.0.0.1 "$port" 2>/dev/null; do port=$((port + 1)); done
     # Turn THIS dispatcher pane into Storybook via exec, so no second pane is
     # spawned (the dispatcher *becomes* the server pane). The keybind launched us
-    # floating + sized + named "storybook" (no close_on_exit, so the pane persists
-    # if the server stops) -- so the detection above finds us by title on resummon.
+    # floating + sized + named "storybook" with close_on_exit, so the pane closes
+    # when the server stops (and the reveal branch above closes cleanly too) --
+    # and the detection above finds us by title on the next summon.
     cd "$pxds" && exec zsh -c "vp exec storybook dev -p $port"
 fi
