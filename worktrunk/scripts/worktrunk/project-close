@@ -8,14 +8,23 @@ set -euo pipefail
 
 script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 
-# Filter to worktree entries only — repo entries are main checkouts of
-# regular repos and can't be safely removed via `wt remove`.
-selection=$("$script_dir/project-list" | awk -F'\t' '
-$3 == "worktree" { data[NR] = $0; if (length($1) > w1) w1 = length($1); if (length($2) > w2) w2 = length($2) }
+# Filter to worktree entries only — repo entries are main checkouts of regular
+# repos and can't be safely removed via `wt remove`. Since every row is a
+# worktree, there's no type column — just an aligned name and path. `sep` is the
+# ┃ project-list uses to join repo┃branch: 3 bytes but 1 display column, so
+# byte-counting awk must discount it to keep the path column aligned.
+sep=$(printf '\342\224\203')  # U+2503 ┃
+selection=$("$script_dir/project-list" | awk -F'\t' -v sep="$sep" '
+function dispw(s,   t) { t = s; return length(s) - 2 * gsub(sep, "", t) }
+function pad(s, w,   n) { n = w - dispw(s); return (n < 1) ? s : s sprintf("%*s", n, "") }
+$3 == "worktree" {
+    line[++count] = $0
+    d = dispw($1); if (d > wn) wn = d
+}
 END {
-    for (i in data) {
-        n = split(data[i], f, "\t")
-        printf "%-*s  %-*s  %s\t%s\n", w1, f[1], w2, f[2], f[3], f[2]
+    for (i = 1; i <= count; i++) {
+        split(line[i], f, "\t")
+        printf "%s  %s\t%s\n", pad(f[1], wn), f[2], f[2]
     }
 }
 ' | fzf \

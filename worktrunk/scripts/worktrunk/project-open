@@ -7,20 +7,33 @@ set -euo pipefail
 
 script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 
-# Format project-list output:
-#   aligned-display \t name \t path
-# fzf displays only the aligned column; we use the trailing fields to look
-# up name + path after selection.
-selection=$("$script_dir/project-list" | awk -F'\t' '
+# Leading type column: a single Nerd Font (v3) glyph per row, built from octal
+# UTF-8 so no multibyte literals live in this file (verified present in
+# JetBrainsMono Nerd Font). `sep` is the ┃ project-list uses to join repo┃branch
+# — 3 bytes but 1 display column, so byte-counting awk must discount it to keep
+# the path column aligned.
+icon_repo=$(printf '\356\234\202')      # nf-dev-git        U+E702
+icon_worktree=$(printf '\356\234\245')  # nf-dev-git-branch U+E725
+icon_path=$(printf '\357\201\273')      # nf-fa-folder      U+F07B
+sep=$(printf '\342\224\203')            # U+2503 ┃
+
+# Format project-list (name \t path \t type) into an aligned display column:
+#   <icon>  <name>  <path> \t path
+# fzf shows only the display column; the trailing path is used after selection.
+# dispw() = display width (bytes minus 2 per ┃); pad() left-justifies to it.
+selection=$("$script_dir/project-list" | awk -F'\t' \
+    -v ir="$icon_repo" -v iw="$icon_worktree" -v ip="$icon_path" -v sep="$sep" '
+function dispw(s,   t) { t = s; return length(s) - 2 * gsub(sep, "", t) }
+function pad(s, w,   n) { n = w - dispw(s); return (n < 1) ? s : s sprintf("%*s", n, "") }
 {
-    data[NR] = $0
-    if (length($1) > w1) w1 = length($1)
-    if (length($2) > w2) w2 = length($2)
+    line[NR] = $0
+    d = dispw($1); if (d > wn) wn = d
 }
 END {
     for (i = 1; i <= NR; i++) {
-        n = split(data[i], f, "\t")
-        printf "%-*s  %-*s  %s\t%s\t%s\n", w1, f[1], w2, f[2], f[3], f[1], f[2]
+        split(line[i], f, "\t")
+        icon = (f[3] == "repo") ? ir : (f[3] == "worktree") ? iw : ip
+        printf "%s  %s  %s\t%s\n", icon, pad(f[1], wn), f[2], f[2]
     }
 }
 ' | fzf \
@@ -31,6 +44,6 @@ END {
 
 [ -z "$selection" ] && exit 0
 
-IFS=$'\t' read -r _ _ path <<< "$selection"
+IFS=$'\t' read -r _ path <<< "$selection"
 
 "$script_dir/zellij-tab-open" "$path"
