@@ -4,9 +4,6 @@
 # i.e. ~/.config/git/ignore) with no core.excludesfile set. Stowed from the
 # `git` dotfiles package.
 
-# Claude Code local (machine-specific) settings — never commit.
-**/.claude/settings.local.json
-
 # Machine-local scratch files. *.local is Vite's convention (and rosetta's own
 # .gitignore); we promote it to global so the pattern holds in every repo. Covers
 # per-worktree scratchpad notes (notes.local.md, the Alt+m pad) and screenshots.
