@@ -1,17 +1,27 @@
 #!/usr/bin/env bash
-# Summon the rosetta pxds Storybook for the CURRENT worktree in a per-tab
-# floating Zellij pane. The summon-or-reveal mechanics live in zj-summon; this
-# script resolves the worktree, bails unless it's a rosetta pxds checkout, and
-# picks a free port.
+# Summon the rosetta pxds Storybook for the CURRENT worktree as a STACKED pane in
+# the tab's right-side stack (alongside helix/terminal), one per tab -- so it stays
+# OFF the floating layer (which is reserved for quick, self-closing tools).
 #
-# Worktree-aware: our cwd is the focused pane's cwd (inherited by the keybind's
-# floating Run). We resolve its git worktree and run Storybook from that
-# worktree's packages/pxds -- a no-op unless that package is @healthbyro/pxds
-# (i.e. nothing outside rosetta, or outside any git repo). rosetta is a Vite+
-# workspace, so Storybook runs via `vp exec` (vp is on the non-interactive PATH
-# via ~/.zshenv; pnpm is not).
+# The `Alt s` keybind biases focus onto the right-side stack (MoveFocus "Right")
+# and launches this as a stacked command pane (Run { stacked true }), so the pane
+# joins that stack. We resolve the focused pane's cwd to its git worktree and run
+# that worktree's packages/pxds -- a no-op unless the package is @healthbyro/pxds
+# (nothing outside rosetta, or outside any git repo). rosetta is a Vite+ workspace,
+# so Storybook runs via `vp exec` (on the non-interactive PATH via ~/.zshenv; pnpm
+# is not).
 #
-# Bound to Alt+s in zellij/dot-config/zellij/config.kdl.
+# Per-tab dedup: if a "storybook" pane already exists in this tab, focus it and
+# exit -- close_on_exit then closes THIS dispatcher pane, and crucially we never
+# exec a second server. Otherwise cd + exec the server so this pane becomes it.
+# (Detection matches the keybind-set pane name "storybook" in PaneInfo.title,
+# excluding our own $ZELLIJ_PANE_ID.)
+#
+# NOTE: this is the one tool that does NOT use zj-summon -- that helper is
+# floating-specific (reveal = show-floating-panes); a stacked pane reveals via
+# focus-pane-id instead. notes still uses zj-summon.
+#
+# Bound to Alt s in zellij/dot-config/zellij/config.kdl.
 
 set -euo pipefail
 
@@ -22,8 +32,21 @@ pxds="$root/packages/pxds"
 [ -f "$pxds/package.json" ] || exit 0
 [ "$(jq -r '.name // empty' "$pxds/package.json" 2>/dev/null)" = "@healthbyro/pxds" ] || exit 0
 
+pid="${ZELLIJ_PANE_ID:--1}" # our own pane id: locate our tab + exclude self
+
+# Already running in this tab? Focus it and bail (no duplicate server). Focus is
+# best-effort; the load-bearing part is that we do NOT exec a second server.
+existing=$(zellij action list-panes --json 2>/dev/null | jq -r --argjson pid "$pid" '
+    (map(select(.id == $pid and (.is_plugin | not))) | first | .tab_id) as $t
+    | [ .[] | select(.tab_id == $t and .id != $pid and .title == "storybook") ][0].id // empty
+')
+if [ -n "$existing" ]; then
+    zellij action focus-pane-id "$existing" 2>/dev/null || true
+    exit 0
+fi
+
 # First free port from 6006 up -> Storybook won't prompt, so it opens the browser.
 port=6006
 while nc -z 127.0.0.1 "$port" 2>/dev/null; do port=$((port + 1)); done
 
-exec "$HOME/scripts/zellij/zj-summon" storybook "$pxds" -- zsh -c "vp exec storybook dev -p $port"
+cd "$pxds" && exec zsh -c "vp exec storybook dev -p $port"

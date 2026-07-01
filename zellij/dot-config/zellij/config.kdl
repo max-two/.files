@@ -172,22 +172,18 @@ keybinds {
                 close_on_exit true
             }
         }
-        // Storybook (rosetta pxds) for the CURRENT worktree, per tab — "summon"
-        // semantics. The script resolves the focused pane's cwd to its git
-        // worktree and runs that worktree's pxds (no-op outside rosetta). First
-        // press in a tab starts Storybook on the first free port from 6006 (it
-        // opens the browser itself) in a floating pane; later presses re-show
-        // that tab's pane. Dismiss with the native floating-pane toggle (Alt+f).
-        // The dispatcher runs floating (NOT in_place — that suspended/replaced
-        // the focused work pane); see ~/scripts/storybook/storybook-pxds.
+        // Storybook (rosetta pxds) for the CURRENT worktree, per tab. Opens as a
+        // STACKED pane joining the tab's right-side helix/terminal stack (MoveFocus
+        // "Right" biases focus onto that stack first), so it lives OFF the floating
+        // layer. The script resolves the focused pane's cwd to its git worktree and
+        // runs that worktree's pxds (no-op outside rosetta); first press starts
+        // Storybook on the first free port from 6006 (it opens the browser), later
+        // presses focus the existing pane. See ~/scripts/storybook/storybook-pxds.
         bind "Alt s" {
+            MoveFocus "Right"
             Run "storybook-pxds" {
                 name "storybook"
-                floating true
-                x "17%"
-                y "17%"
-                width "66%"
-                height "66%"
+                stacked true
                 close_on_exit true
             }
         }
