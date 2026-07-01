@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# zj-summon NAME CWD -- COMMAND [ARGS...]
+#
+# Reusable "summon-or-reveal" for a per-tab floating Zellij pane. Shared by the
+# Alt+n notes and Alt+s storybook binds (and any future tool with the same
+# shape). Behaviour:
+#   - Not in a Zellij session            -> no-op (exit 0).
+#   - A floating pane titled NAME already
+#     exists in THIS tab                 -> reveal the floating layer.
+#   - Otherwise                          -> cd CWD and exec COMMAND, so THIS
+#                                           dispatcher pane BECOMES the app (no
+#                                           second pane is spawned).
+#
+# CALLER CONTRACT (both the keybind and the wrapper script):
+#   - The launching keybind must set  name "NAME"  +  floating true  +
+#     close_on_exit true  (close_on_exit so the pane closes after a reveal, and
+#     when the app exits), e.g.:
+#       bind "Alt n" { Run "notes" { name "notes"; floating true; close_on_exit true; ... } }
+#   - The wrapper must hand off with `exec zj-summon ...` so this script replaces
+#     the dispatcher pane's process; our exec of COMMAND then makes the pane run
+#     COMMAND. Call it WITHOUT exec and COMMAND becomes a grandchild -- the
+#     pane's title/lifecycle won't track COMMAND and detection breaks.
+#
+# Per-tab detection: find our own tab via $ZELLIJ_PANE_ID (== PaneInfo.id), then
+# look for another floating pane in that tab whose title == NAME. We match the
+# keybind-set pane name, which sticks as PaneInfo.title for apps that don't emit
+# an OSC title sequence (Helix, a dev server); self is excluded by id. We can't
+# use is_focused: it's per-layer-per-tab, so `first` could land on another tab.
+#
+# Why floating (not in_place): a keybind Run pane inherits the focused pane's
+# cwd -- how callers resolve the current worktree -- and in_place would
+# suspend/replace that focused work pane. Summon-only by design: this never
+# hides (dismiss with Zellij's native Alt+f toggle), so we never need to read
+# prior floating visibility (which we couldn't, being launched floating).
+
+set -euo pipefail
+
+[ -z "${ZELLIJ:-}" ] && exit 0
+
+name="${1:?zj-summon: NAME required}"
+cwd="${2:?zj-summon: CWD required}"
+shift 2
+[ "${1:-}" = "--" ] && shift
+[ "$#" -gt 0 ] || { echo "zj-summon: no COMMAND given" >&2; exit 2; }
+
+pid="${ZELLIJ_PANE_ID:--1}" # our own pane id: locate our tab + exclude self
+
+if zellij action list-panes --json 2>/dev/null | jq -e --arg name "$name" --argjson pid "$pid" '
+        (map(select(.id == $pid and (.is_plugin | not))) | first | .tab_id) as $t
+        | ($t != null)
+          and any(.[]; .tab_id == $t
+                       and .is_floating
+                       and .id != $pid
+                       and .title == $name)
+    ' >/dev/null 2>&1; then
+    # Already open in this tab -> just ensure the floating layer is shown.
+    zellij action show-floating-panes
+else
+    # Not open here -> become the app in place (no second pane).
+    cd "$cwd" && exec "$@"
+fi

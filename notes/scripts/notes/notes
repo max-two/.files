@@ -1,70 +1,20 @@
 #!/usr/bin/env bash
 # Summon a scratchpad note for the CURRENT worktree in a per-tab floating Zellij
-# pane, opened in Helix.
+# pane, opened in Helix. The summon-or-reveal mechanics live in zj-summon; this
+# script only resolves which note to edit.
 #
 # Worktree-aware: a keybind `Run { floating true }` pane inherits the focused
-# pane's cwd (same as the Alt+r revdiff / Alt+s storybook binds), so this
-# dispatcher's own cwd is the cwd of the pane you pressed Alt+m from. We resolve
-# that to its git worktree root and edit THAT worktree's notes.local.md. Outside
-# any git repo we fall back to ~/notes.local.md, so the key always does something.
+# pane's cwd, so our cwd is the cwd of the pane you pressed Alt+n from. We
+# resolve that to its git worktree root and edit THAT worktree's notes.local.md,
+# falling back to ~/notes.local.md outside any repo. The note is gitignored via
+# the global core excludes (*.local.*) and lives in-worktree, so it's cleaned up
+# with the worktree on `wt merge`.
 #
-# The note lives at <worktree>/notes.local.md — in-worktree, so it's deleted
-# along with the worktree on `wt merge` (auto-cleanup; verified a gitignored file
-# does not block `git worktree remove`), and gitignored everywhere via the global
-# core excludes (*.local / *.local.* in ~/.config/git/ignore), so it never shows
-# in git status.
-#
-# Floating panes are per-tab in Zellij, so each worktree tab gets its own note:
-#   - No note pane in this tab yet: open Helix on the note in a floating pane.
-#   - Note pane already exists in this tab: just reveal the floating layer, so you
-#     land back in the same buffer (cursor, unsaved edits, undo history intact).
-#
-# "Summon" semantics only — this never hides. Dismiss by quitting Helix (:wq / :q,
-# which closes the pane via --close-on-exit) or by hiding the floating layer with
-# Zellij's native toggle (Alt+f, which keeps the buffer alive to re-summon). This
-# mirrors the Alt+s storybook bind and is deliberate: a one-key launch-or-toggle
-# would have to read the *prior* floating-pane visibility, but this dispatcher is
-# itself launched floating, which forces the layer visible — so prior visibility
-# can't be read. Re-summoning a hidden note REVEALS it rather than spawning a
-# second Helix on the same file (two editors would clobber each other's saves).
-#
-# We find OUR OWN tab via $ZELLIJ_PANE_ID (Zellij sets it on every spawned pane;
-# it equals PaneInfo.id). We can't use is_focused to find the active tab:
-# PaneInfo.is_focused is "focused in its layer", so every tab has focused panes
-# and `first` could land on the wrong worktree tab. Detect the note pane by the
-# launched pane's --name ("notes"), excluding our own pane id. Helix does not emit
-# an OSC title sequence, so the --name sticks as PaneInfo.title (verified against
-# live `list-panes --json`; contrast the claude panes, which retitle via OSC).
-#
-# Bound to Alt+m in zellij/dot-config/zellij/config.kdl.
+# Bound to Alt+n in zellij/dot-config/zellij/config.kdl.
 
 set -euo pipefail
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
-# Resolve the worktree root for the pane's cwd; fall back to $HOME outside any repo.
 root=$(git rev-parse --show-toplevel 2>/dev/null) || root="$HOME"
-note="$root/notes.local.md"
-
-PID="${ZELLIJ_PANE_ID:--1}" # our own pane id, for locating our tab + self-exclusion
-
-# Is there already a note floating pane in THIS tab (our pane's tab)?
-if zellij action list-panes --json 2>/dev/null | jq -e --argjson pid "$PID" '
-        (map(select(.id == $pid and (.is_plugin | not))) | first | .tab_id) as $t
-        | ($t != null)
-          and any(.[]; .tab_id == $t
-                       and .is_floating
-                       and .id != $pid
-                       and .title == "notes")
-    ' >/dev/null 2>&1; then
-    # Already open here -> ensure the floating layer is shown (idempotent; the
-    # dispatcher launch already revealed it).
-    zellij action show-floating-panes
-else
-    # Not open here -> turn THIS dispatcher pane into Helix via exec, so no
-    # second pane is spawned (the dispatcher pane *becomes* the editor). The
-    # keybind launched us floating + sized + named "notes", and closes the pane
-    # when Helix exits (:wq) via its close_on_exit -- so the detection above finds
-    # us by title ("notes") on the next summon.
-    cd "$root" && exec hx "$note"
-fi
+exec "$HOME/scripts/zellij/zj-summon" notes "$root" -- hx "$root/notes.local.md"
