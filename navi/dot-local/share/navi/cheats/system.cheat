@@ -9,7 +9,7 @@ Alt+w
 # Close worktree (remove + close tab)
 Alt+x
 
-# revdiff — floating review of uncommitted changes (current pane's repo)
+# revdiff — review of current pane's repo, per tab — summon (Alt+f to hide, q for fresh)
 Alt+r
 
 # Storybook (pxds) for current worktree, per tab — summon (Alt+f to hide)

@@ -1,31 +1,43 @@
 #!/usr/bin/env bash
-# zj-summon NAME CWD -- COMMAND [ARGS...]
+# zj-summon CWD -- COMMAND [ARGS...]
 #
 # Reusable "summon-or-reveal" for a per-tab floating Zellij pane. Shared by the
-# Alt+n notes and Alt+s storybook binds (and any future tool with the same
-# shape). Behaviour:
+# Alt+n notes and Alt+r revdiff binds (and any future tool with the same shape).
+# Behaviour:
 #   - Not in a Zellij session            -> no-op (exit 0).
-#   - A floating pane titled NAME already
-#     exists in THIS tab                 -> reveal the floating layer.
+#   - A live floating pane launched the
+#     SAME way already exists in THIS tab -> reveal the floating layer.
 #   - Otherwise                          -> cd CWD and exec COMMAND, so THIS
 #                                           dispatcher pane BECOMES the app (no
 #                                           second pane is spawned).
 #
 # CALLER CONTRACT (both the keybind and the wrapper script):
-#   - The launching keybind must set  name "NAME"  +  floating true  +
-#     close_on_exit true  (close_on_exit so the pane closes after a reveal, and
-#     when the app exits), e.g.:
-#       bind "Alt n" { Run "notes" { name "notes"; floating true; close_on_exit true; ... } }
+#   - The launching keybind must set  floating true  +  close_on_exit true
+#     (close_on_exit so the dispatcher pane closes after a reveal, and so an
+#     exited app leaves no husk pane behind), e.g.:
+#       bind "Alt n" { Run "notes" { floating true; close_on_exit true; ... } }
+#   - Each tool needs a DISTINCT keybind Run target (its wrapper's name): that
+#     command string is this pane's identity for dedup (see below). The wrapper
+#     name must NOT collide with the app binary it launches (e.g. revdiff-summon,
+#     NOT revdiff), or the ~/scripts/*(N-/) PATH glob would shadow the binary.
 #   - The wrapper must hand off with `exec zj-summon ...` so this script replaces
 #     the dispatcher pane's process; our exec of COMMAND then makes the pane run
-#     COMMAND. Call it WITHOUT exec and COMMAND becomes a grandchild -- the
-#     pane's title/lifecycle won't track COMMAND and detection breaks.
+#     COMMAND. Call it WITHOUT exec and COMMAND becomes a grandchild -- the pane
+#     is still identified by terminal_command (see below), so dedup survives, but
+#     the exec chain keeps one process per pane, which is what we want.
 #
-# Per-tab detection: find our own tab via $ZELLIJ_PANE_ID (== PaneInfo.id), then
-# look for another floating pane in that tab whose title == NAME. We match the
-# keybind-set pane name, which sticks as PaneInfo.title for apps that don't emit
-# an OSC title sequence (Helix, a dev server); self is excluded by id. We can't
-# use is_focused: it's per-layer-per-tab, so `first` could land on another tab.
+# Detection keys on `terminal_command`, NOT `title`. A pane's terminal_command is
+# the command it was CREATED to run (the keybind's Run target) and is fixed for
+# the pane's whole life -- the exec chain above doesn't change it, and nothing
+# the app does at runtime can rewrite it. `title`, by contrast, is app-owned:
+# any TUI that emits an OSC title sequence overwrites the keybind-set pane name
+# (revdiff -> "rd: <ref>", claude -> its task summary), which silently broke the
+# old title==NAME matching and let re-presses stack duplicate panes. We find our
+# OWN pane via $ZELLIJ_PANE_ID, read its tab_id + terminal_command, then look for
+# ANOTHER floating, non-exited pane in that tab with the same terminal_command
+# (self excluded by id). The (.exited | not) guard skips husk panes:
+# terminal_command lingers after a pane's process exits, and while close_on_exit
+# normally closes such panes, the guard is belt-and-braces.
 #
 # Why floating (not in_place): a keybind Run pane inherits the focused pane's
 # cwd -- how callers resolve the current worktree -- and in_place would
@@ -37,21 +49,23 @@ set -euo pipefail
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
-name="${1:?zj-summon: NAME required}"
-cwd="${2:?zj-summon: CWD required}"
-shift 2
+cwd="${1:?zj-summon: CWD required}"
+shift
 [ "${1:-}" = "--" ] && shift
 [ "$#" -gt 0 ] || { echo "zj-summon: no COMMAND given" >&2; exit 2; }
 
-pid="${ZELLIJ_PANE_ID:--1}" # our own pane id: locate our tab + exclude self
+pid="${ZELLIJ_PANE_ID:--1}" # our own pane id: find our tab + launch command, exclude self
 
-if zellij action list-panes --json 2>/dev/null | jq -e --arg name "$name" --argjson pid "$pid" '
-        (map(select(.id == $pid and (.is_plugin | not))) | first | .tab_id) as $t
-        | ($t != null)
+if zellij action list-panes --json 2>/dev/null | jq -e --argjson pid "$pid" '
+        (map(select(.id == $pid)) | first) as $self
+        | $self.tab_id as $t
+        | $self.terminal_command as $cmd
+        | ($self != null and $t != null and $cmd != null)
           and any(.[]; .tab_id == $t
-                       and .is_floating
+                       and (.is_floating == true)
                        and .id != $pid
-                       and .title == $name)
+                       and ((.exited // false) | not)
+                       and .terminal_command == $cmd)
     ' >/dev/null 2>&1; then
     # Already open in this tab -> just ensure the floating layer is shown.
     zellij action show-floating-panes

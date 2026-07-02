@@ -17,4 +17,4 @@ set -euo pipefail
 [ -z "${ZELLIJ:-}" ] && exit 0
 
 root=$(git rev-parse --show-toplevel 2>/dev/null) || root="$HOME"
-exec "$HOME/scripts/zellij/zj-summon" notes "$root" -- hx "$root/notes.local.md"
+exec "$HOME/scripts/zellij/zj-summon" "$root" -- hx "$root/notes.local.md"

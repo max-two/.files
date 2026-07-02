@@ -156,14 +156,19 @@ keybinds {
                 close_on_exit true
             }
         }
-        // revdiff: instant floating review of uncommitted changes (bare `revdiff`,
-        // no smart ref-detection — that lives in the /revdiff skill, not the binary).
-        // Opens in the focused pane's cwd, so trigger it from a pane sitting in the repo.
-        // On quit, annotations auto-save to ~/.config/revdiff/history/<repo>/; then tell
-        // Claude "apply my latest revdiff annotations" to ingest them (no /revdiff
-        // round-trip needed to open the panel).
+        // revdiff: per-tab floating review of the focused pane's repo — "summon"
+        // semantics. First press opens revdiff for that worktree; re-press REVEALS
+        // the same review instead of stacking a second pane (dismiss with Alt+f, or
+        // quit revdiff with q to start a fresh review). Dedup lives in
+        // ~/scripts/revdiff/revdiff-summon via zj-summon, which matches on
+        // terminal_command — revdiff sets its own OSC title ("rd: <ref>"), so title
+        // matching is unreliable. Still bare `revdiff` (no smart ref-detection —
+        // that's the /revdiff skill). On quit, annotations auto-save to
+        // ~/.config/revdiff/history/<repo>/; then tell Claude "apply my latest
+        // revdiff annotations" to ingest them.
         bind "Alt r" {
-            Run "revdiff" {
+            Run "revdiff-summon" {
+                name "revdiff"
                 floating true
                 x "17%"
                 y "17%"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Summon-or-reveal a floating revdiff reviewing the CURRENT worktree's
+# uncommitted changes, one per tab. The summon-or-reveal mechanics live in
+# zj-summon; this script only resolves which repo to review.
+#
+# Worktree-aware: a keybind `Run { floating true }` pane inherits the focused
+# pane's cwd, so we resolve that to its git worktree root and run revdiff there.
+# (revdiff walks up to the git root itself, so resolving is belt-and-braces --
+# it just makes "review THIS worktree" explicit regardless of the subdir you
+# triggered from.) Falls back to $PWD outside any repo, so revdiff still launches
+# and reports the "not a repo" case itself -- matching the old bare-revdiff bind.
+#
+# Named revdiff-summon (NOT revdiff) so the ~/scripts/*(N-/) PATH glob can't
+# shadow the revdiff binary. revdiff sets its own OSC window title ("rd: <ref>"),
+# so zj-summon dedups on terminal_command (which stays "revdiff-summon"), not the
+# title -- see the header of ~/scripts/zellij/zj-summon.
+#
+# Bound to Alt r in zellij/dot-config/zellij/config.kdl.
+
+set -euo pipefail
+
+[ -z "${ZELLIJ:-}" ] && exit 0
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || root="$PWD"
+exec "$HOME/scripts/zellij/zj-summon" "$root" -- revdiff
