@@ -23,9 +23,9 @@ fi
 all_mcps=$(jq -r '.mcpServers | keys[]' "$wt_path/.mcp.json" 2>/dev/null) || exit 0
 
 enabled="${WT_ENABLED_MCPS:-eng-delivery}"
-enabled_json=$(printf '%s' "$enabled" | jq -R 'select(length > 0)' | jq -s .)
+enabled_json=$(printf '%s' "$enabled" | tr ' ' '\n' | jq -R 'select(length > 0)' | jq -s .)
 
-enabled_set=" $(printf '%s' "$enabled" | tr '\n' ' ') "
+enabled_set=" $enabled "
 disabled=""
 while IFS= read -r name; do
     case "$enabled_set" in

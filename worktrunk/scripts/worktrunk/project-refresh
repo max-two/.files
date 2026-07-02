@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Restart Claude with a new MCP selection, resuming the previous session.
+# Runs in-place in the Claude pane (Alt+z keybind with in_place=true).
+# The old Claude is suspended by Zellij; exec replaces this script with
+# the new Claude process in the same pane position.
+
+set -euo pipefail
+
+template="$HOME/.claude/mcp-servers.json"
+[ -f "$template" ] || { echo "No MCP template at $template"; sleep 2; exit 1; }
+
+all_mcps=$(jq -r '.mcpServers | keys[]' "$template" 2>/dev/null)
+[ -z "$all_mcps" ] && exit 0
+
+enabled=$(printf '%s\n' $all_mcps | gum choose \
+    --no-limit \
+    --header='mcps' \
+    --selected=eng-delivery) || exit 0
+
+keys_json=$(printf '%s' "$enabled" | tr '\n' ' ' | tr ' ' '\n' | jq -R 'select(length > 0)' | jq -s .)
+mcp_file="${TMPDIR:-/tmp}/claude-mcp-$$.json"
+jq -c --argjson keys "$keys_json" \
+    '{mcpServers: (.mcpServers | to_entries | map(select(.key as $k | $keys | index($k))) | from_entries)}' \
+    "$template" > "$mcp_file"
+
+exec claude --strict-mcp-config --mcp-config "$mcp_file" --continue

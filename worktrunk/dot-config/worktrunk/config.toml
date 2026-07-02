@@ -11,10 +11,7 @@ vp-install = 'if grep -qs vite-plus package.json pnpm-workspace.yaml; then vp in
 [post-start]
 zoxide-prime = "git -C {{ worktree_path }} ls-tree -r -d --name-only HEAD | awk -F/ -v wt={{ worktree_path }} 'NF <= 4 { print wt \"/\" $0 }' | tr '\\n' '\\0' | xargs -0 zoxide add"
 
-[[post-switch]]
-mcp = "mcp-configure '{{ worktree_path }}'"
-
-[[post-switch]]
+[post-switch]
 zellij-tab = "zellij-tab-open '{{ worktree_path }}'"
 
 [post-remove]

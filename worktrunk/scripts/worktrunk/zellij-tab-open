@@ -10,6 +10,11 @@
 # it). This is how the Linear integration (linear-work) seeds a worktree's
 # Claude session. The manual Alt+n flow leaves the var unset and is
 # unaffected, as is re-opening (focusing) an existing tab.
+#
+# If WT_ENABLED_MCPS is set (space-separated server names), Claude launches
+# with --strict-mcp-config --mcp-config containing only those servers'
+# definitions (read from ~/.claude/mcp-servers.json). Servers not in the list
+# are excluded entirely from the session.
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
@@ -19,7 +24,7 @@ script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 name=$("$script_dir/project-list" | awk -F'\t' -v p="$path" '$2 == p { print $1; exit }')
 [ -z "$name" ] && name=$(basename "$path")
 
-# Locate the on-disk `layout` layout so we can build a prompt-injected copy.
+# Locate the on-disk `layout` layout so we can build a modified copy.
 # In the headless Linear path the ZELLIJ_CONFIG_* vars aren't set, so fall
 # back to the stowed location.
 resolve_layout_file() {
@@ -36,21 +41,55 @@ resolve_layout_file() {
     return 1
 }
 
-# Emit the `layout` KDL with $2 injected as an arg to the claude pane. The
-# prompt is wrapped in a KDL raw string (r#"..."#); the fence is made longer
-# than any run of '#' in the prompt so its closing delimiter can't appear
-# inside the text, letting arbitrary multi-line content pass through verbatim.
-build_layout_with_prompt() {
-    local file="$1" prompt="$2" maxrun fence
-    maxrun=$(printf '%s' "$prompt" | grep -oE '#+' | awk '{ if (length > m) m = length } END { print m + 0 }')
-    fence=$(printf '%*s' "$((maxrun + 1))" '' | tr ' ' '#')
-    # Emit the args as a child node on its own line (multi-line block form).
-    # zellij's KDL parser rejects an inline `{ args ... }` when the raw string
-    # spans newlines, but accepts the block form (as the hx pane already uses).
-    PROMPT="$prompt" FENCE="$fence" awk '
+# Build a KDL raw string fence long enough for the given text.
+kdl_fence() {
+    local maxrun
+    maxrun=$(printf '%s' "$1" | grep -oE '#+' | awk '{ if (length > m) m = length } END { print m + 0 }')
+    printf '%*s' "$((maxrun + 1))" '' | tr ' ' '#'
+}
+
+# Build --mcp-config JSON from WT_ENABLED_MCPS and the server template.
+build_mcp_json() {
+    local template="$HOME/.claude/mcp-servers.json"
+    [ -f "$template" ] || return 1
+    local keys_json
+    keys_json=$(printf '%s' "$WT_ENABLED_MCPS" | tr ' ' '\n' | jq -R 'select(length > 0)' | jq -s .)
+    jq -c --argjson keys "$keys_json" \
+        '{mcpServers: (.mcpServers | to_entries | map(select(.key as $k | $keys | index($k))) | from_entries)}' \
+        "$template"
+}
+
+# Emit the `layout` KDL with extra args injected into the claude pane.
+# Uses WT_CLAUDE_PROMPT and/or WT_ENABLED_MCPS from the environment.
+build_layout_with_args() {
+    local file="$1"
+    local args_line=""
+
+    if [ -n "${WT_ENABLED_MCPS:-}" ]; then
+        local mcp_json mcp_fence
+        mcp_json=$(build_mcp_json) || true
+        if [ -n "$mcp_json" ]; then
+            mcp_fence=$(kdl_fence "$mcp_json")
+            args_line="\"--strict-mcp-config\" \"--mcp-config\" r${mcp_fence}\"${mcp_json}\"${mcp_fence}"
+        fi
+    fi
+
+    if [ -n "${WT_CLAUDE_CONTINUE:-}" ]; then
+        args_line="${args_line:+$args_line }\"--continue\""
+    fi
+
+    if [ -n "${WT_CLAUDE_PROMPT:-}" ]; then
+        local prompt_fence
+        prompt_fence=$(kdl_fence "$WT_CLAUDE_PROMPT")
+        args_line="${args_line:+$args_line }r${prompt_fence}\"${WT_CLAUDE_PROMPT}\"${prompt_fence}"
+    fi
+
+    [ -z "$args_line" ] && { cat "$file"; return; }
+
+    ARGS_LINE="$args_line" awk '
         !injected && /command="claude"/ {
             printf "%s {\n", $0
-            printf "            args r%s\"%s\"%s\n", ENVIRON["FENCE"], ENVIRON["PROMPT"], ENVIRON["FENCE"]
+            printf "            args %s\n", ENVIRON["ARGS_LINE"]
             printf "        }\n"
             injected = 1
             next
@@ -63,9 +102,9 @@ build_layout_with_prompt() {
 # (zellij-org/zellij#3860), so check existence explicitly first.
 if zellij action query-tab-names 2>/dev/null | grep -qxF "$name"; then
     zellij action go-to-tab-name "$name"
-elif [ -n "${WT_CLAUDE_PROMPT:-}" ] && layout_file=$(resolve_layout_file); then
+elif { [ -n "${WT_CLAUDE_PROMPT:-}" ] || [ -n "${WT_ENABLED_MCPS:-}" ]; } && layout_file=$(resolve_layout_file); then
     zellij action new-tab \
-        --layout-string "$(build_layout_with_prompt "$layout_file" "$WT_CLAUDE_PROMPT")" \
+        --layout-string "$(build_layout_with_args "$layout_file")" \
         --name "$name" --cwd "$path"
 else
     zellij action new-tab --layout layout --name "$name" --cwd "$path"

@@ -50,7 +50,7 @@ if [ -n "$all_mcps" ]; then
         --header='mcps' \
         --selected=eng-delivery) || exit 0
 
-    export WT_ENABLED_MCPS="$enabled"
+    export WT_ENABLED_MCPS="$(printf '%s' "$enabled" | tr '\n' ' ')"
 fi
 
 wt -C "$repo_path" switch --create "$branch"

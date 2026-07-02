@@ -52,6 +52,7 @@ create_worktree() {
 if [ "${1:-}" = "--pick" ]; then
     branch="${2:-}"
     export WT_CLAUDE_PROMPT="${3:-}"
+    export WT_ENABLED_MCPS="${4:-design eng-delivery}"
     [ -z "$branch" ] && { echo "linear-work: no branch"; sleep 2; exit 1; }
 
     selection=$(project-list | awk -F'\t' '
@@ -82,6 +83,7 @@ export ZELLIJ=0
 export ZELLIJ_SESSION_NAME="$session"
 
 export WT_CLAUDE_PROMPT="${LINEAR_PROMPT:-}"
+export WT_ENABLED_MCPS="design eng-delivery"
 
 workdir="${LINEAR_WORK_DIR:-}"
 if [ -n "$workdir" ] && git -C "$workdir" rev-parse --git-dir >/dev/null 2>&1; then
@@ -90,5 +92,5 @@ else
     # No valid preselected repo -> fzf picker in a floating pane. Pass branch +
     # prompt as argv since the pane won't inherit our env.
     zellij action new-pane --floating --close-on-exit --cwd "$HOME" -- \
-        "$SELF" --pick "$branch" "${LINEAR_PROMPT:-}"
+        "$SELF" --pick "$branch" "${LINEAR_PROMPT:-}" "${WT_ENABLED_MCPS:-}"
 fi

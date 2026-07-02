@@ -146,6 +146,12 @@ keybinds {
                 close_on_exit true
             }
         }
+        bind "Alt z" {
+            Run "project-refresh" {
+                in_place true
+                close_on_exit true
+            }
+        }
         bind "Alt x" {
             Run "project-close" {
                 floating true

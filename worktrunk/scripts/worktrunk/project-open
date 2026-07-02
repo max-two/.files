@@ -46,4 +46,15 @@ END {
 
 IFS=$'\t' read -r _ path <<< "$selection"
 
+# MCP picker — same as project-new step 3.
+all_mcps=$(jq -r '.mcpServers | keys[]' "$HOME/.claude/mcp-servers.json" 2>/dev/null)
+if [ -n "$all_mcps" ]; then
+    enabled=$(printf '%s\n' $all_mcps | gum choose \
+        --no-limit \
+        --header='mcps' \
+        --selected=eng-delivery) || exit 0
+
+    export WT_ENABLED_MCPS="$(printf '%s' "$enabled" | tr '\n' ' ')"
+fi
+
 "$script_dir/zellij-tab-open" "$path"
