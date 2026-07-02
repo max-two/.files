@@ -16,7 +16,7 @@ $3 == "path" { next }
 {
     name = $1
     repo = name
-    sub(" / .*$", "", repo)
+    sub("\342\224\203.*$", "", repo)
     if (!(repo in seen)) {
         seen[repo] = 1
         printf "%s\t%s\n", repo, $2
