@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Interactive MCP bundle picker with contents shown alongside each name.
+# Outputs selected bundle names (space-separated) on stdout.
+# Exit 1 if the user cancels.
+
+set -euo pipefail
+
+template="$HOME/.claude/mcp-servers.json"
+[ -f "$template" ] || exit 0
+
+all_mcps=$(jq -r '.mcpServers | keys[]' "$template" 2>/dev/null)
+[ -z "$all_mcps" ] && exit 0
+
+# What each Mint MCP bundle contains. Update when bundles change.
+contents() {
+    case "$1" in
+        analytics)          echo "Mixpanel" ;;
+        design)             echo "Figma, Magic Patterns" ;;
+        eng-delivery)       echo "GitHub, Linear, OX, Rovo" ;;
+        eng-observability)  echo "Datadog" ;;
+        knowledge)          echo "Docs, Drive, GitHub, Sheets, Guru, Notion, Rovo" ;;
+        sequentialthinking) echo "Sequential Thinking" ;;
+        *)                  echo "" ;;
+    esac
+}
+
+# Find the widest bundle name for alignment.
+max_w=0
+for name in $all_mcps; do
+    w=${#name}
+    [ "$w" -gt "$max_w" ] && max_w=$w
+done
+
+# Build display lines: "name    contents" with a hidden tab+name suffix for extraction.
+lines=""
+for name in $all_mcps; do
+    desc=$(contents "$name")
+    padded=$(printf "%-${max_w}s" "$name")
+    if [ -n "$desc" ]; then
+        line="${padded}  ${desc}"
+    else
+        line="$padded"
+    fi
+    lines="${lines:+${lines}
+}${line}"$'\t'"${name}"
+done
+
+selected=$(printf '%s\n' "$lines" | gum choose \
+    --no-limit \
+    --header='mcps (↑/↓ navigate, x toggle, enter confirm)' \
+    --selected.foreground='#a7c080' \
+    --selected=eng-delivery) || exit 1
+
+printf '%s\n' "$selected" | awk -F'\t' '{ print $NF }' | tr '\n' ' '

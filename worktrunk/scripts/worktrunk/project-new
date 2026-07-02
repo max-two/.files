@@ -41,16 +41,8 @@ branch=$(fzf \
 
 [ -z "$branch" ] && exit 0
 
-# Step 3: choose which MCP servers to enable for this worktree's Claude
-# session. eng-delivery is pre-selected; the rest start unselected.
-all_mcps=$(jq -r '.mcpServers | keys[]' "$HOME/.claude/mcp-servers.json" 2>/dev/null)
-if [ -n "$all_mcps" ]; then
-    enabled=$(printf '%s\n' $all_mcps | gum choose \
-        --no-limit \
-        --header='mcps' \
-        --selected=eng-delivery) || exit 0
-
-    export WT_ENABLED_MCPS="$(printf '%s' "$enabled" | tr '\n' ' ')"
-fi
+# Step 3: choose which MCP servers to enable for this worktree's Claude session.
+enabled=$("$script_dir/mcp-picker") || exit 0
+[ -n "$enabled" ] && export WT_ENABLED_MCPS="$enabled"
 
 wt -C "$repo_path" switch --create "$branch"

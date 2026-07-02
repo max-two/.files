@@ -9,15 +9,10 @@ set -euo pipefail
 template="$HOME/.claude/mcp-servers.json"
 [ -f "$template" ] || { echo "No MCP template at $template"; sleep 2; exit 1; }
 
-all_mcps=$(jq -r '.mcpServers | keys[]' "$template" 2>/dev/null)
-[ -z "$all_mcps" ] && exit 0
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+enabled=$("$script_dir/mcp-picker") || exit 0
 
-enabled=$(printf '%s\n' $all_mcps | gum choose \
-    --no-limit \
-    --header='mcps' \
-    --selected=eng-delivery) || exit 0
-
-keys_json=$(printf '%s' "$enabled" | tr '\n' ' ' | tr ' ' '\n' | jq -R 'select(length > 0)' | jq -s .)
+keys_json=$(printf '%s' "$enabled" | tr ' ' '\n' | jq -R 'select(length > 0)' | jq -s .)
 mcp_file="${TMPDIR:-/tmp}/claude-mcp-$$.json"
 jq -c --argjson keys "$keys_json" \
     '{mcpServers: (.mcpServers | to_entries | map(select(.key as $k | $keys | index($k))) | from_entries)}' \
