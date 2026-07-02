@@ -9,3 +9,5 @@
 # per-worktree scratchpad notes (notes.local.md, the Alt+m pad) and screenshots.
 *.local
 *.local.*
+
+**/.claude/.cc-writes/
