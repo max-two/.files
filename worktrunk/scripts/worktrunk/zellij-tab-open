@@ -61,27 +61,31 @@ build_mcp_json() {
 
 # Emit the `layout` KDL with extra args injected into the claude pane.
 # Uses WT_CLAUDE_PROMPT and/or WT_ENABLED_MCPS from the environment.
+# Ordering matters: --mcp-config <configs...> is variadic and consumes all
+# subsequent non-flag args, so the prompt positional must come first.
 build_layout_with_args() {
     local file="$1"
     local args_line=""
 
-    if [ -n "${WT_ENABLED_MCPS:-}" ]; then
-        local mcp_json mcp_fence
-        mcp_json=$(build_mcp_json) || true
-        if [ -n "$mcp_json" ]; then
-            mcp_fence=$(kdl_fence "$mcp_json")
-            args_line="\"--strict-mcp-config\" \"--mcp-config\" r${mcp_fence}\"${mcp_json}\"${mcp_fence}"
-        fi
+    # Prompt and --continue must come BEFORE --mcp-config, which is variadic
+    # (<configs...>) and swallows all subsequent non-flag arguments.
+    if [ -n "${WT_CLAUDE_PROMPT:-}" ]; then
+        local prompt_fence
+        prompt_fence=$(kdl_fence "$WT_CLAUDE_PROMPT")
+        args_line="r${prompt_fence}\"${WT_CLAUDE_PROMPT}\"${prompt_fence}"
     fi
 
     if [ -n "${WT_CLAUDE_CONTINUE:-}" ]; then
         args_line="${args_line:+$args_line }\"--continue\""
     fi
 
-    if [ -n "${WT_CLAUDE_PROMPT:-}" ]; then
-        local prompt_fence
-        prompt_fence=$(kdl_fence "$WT_CLAUDE_PROMPT")
-        args_line="${args_line:+$args_line }r${prompt_fence}\"${WT_CLAUDE_PROMPT}\"${prompt_fence}"
+    if [ -n "${WT_ENABLED_MCPS:-}" ]; then
+        local mcp_json mcp_fence
+        mcp_json=$(build_mcp_json) || true
+        if [ -n "$mcp_json" ]; then
+            mcp_fence=$(kdl_fence "$mcp_json")
+            args_line="${args_line:+$args_line }\"--strict-mcp-config\" \"--mcp-config\" r${mcp_fence}\"${mcp_json}\"${mcp_fence}"
+        fi
     fi
 
     [ -z "$args_line" ] && { cat "$file"; return; }
