@@ -31,18 +31,18 @@ for name in $all_mcps; do
     [ "$w" -gt "$max_w" ] && max_w=$w
 done
 
-# Build display lines: "name    contents" with a hidden tab+name suffix for extraction.
+# Build display lines: "name  ┃ contents" — extract name as first field (up to whitespace).
 lines=""
 for name in $all_mcps; do
     desc=$(contents "$name")
     padded=$(printf "%-${max_w}s" "$name")
     if [ -n "$desc" ]; then
-        line="${padded}  ${desc}"
+        line="${padded}  ┃ ${desc}"
     else
         line="$padded"
     fi
     lines="${lines:+${lines}
-}${line}"$'\t'"${name}"
+}${line}"
 done
 
 selected=$(printf '%s\n' "$lines" | gum choose \
@@ -51,4 +51,4 @@ selected=$(printf '%s\n' "$lines" | gum choose \
     --selected.foreground='#a7c080' \
     --selected=eng-delivery) || exit 1
 
-printf '%s\n' "$selected" | awk -F'\t' '{ print $NF }' | tr '\n' ' '
+printf '%s\n' "$selected" | awk '{ print $1 }' | tr '\n' ' '
