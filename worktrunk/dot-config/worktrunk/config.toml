@@ -14,6 +14,12 @@ zoxide-prime = "git -C {{ worktree_path }} ls-tree -r -d --name-only HEAD | awk 
 [post-switch]
 zellij-tab = "zellij-tab-open '{{ worktree_path }}'"
 
+[pre-remove]
+# Capture the tab id(s) while the worktree still exists (its panes' CWDs still
+# match); post-remove closes them. `wt remove` renames the worktree into
+# .bare/wt/trash before post-remove, so a CWD lookup there would find nothing.
+zellij-tab = "zellij-tab-close capture '{{ worktree_path }}'"
+
 [post-remove]
 zellij-tab = "zellij-tab-close '{{ worktree_path }}'"
 

@@ -102,14 +102,27 @@ build_layout_with_args() {
     ' "$file"
 }
 
-# zellij's go-to-tab-name returns 0 even if the tab doesn't exist
-# (zellij-org/zellij#3860), so check existence explicitly first.
-if zellij action query-tab-names 2>/dev/null | grep -qxF "$name"; then
-    zellij action go-to-tab-name "$name"
-elif { [ -n "${WT_CLAUDE_PROMPT:-}" ] || [ -n "${WT_ENABLED_MCPS:-}" ]; } && layout_file=$(resolve_layout_file); then
+# Focus an existing tab for this path if one is open. worktree-tab-id resolves
+# it live by pane CWD — NOT by tab name, which may still be the interim fallback
+# while worktree-tab-namer renames it asynchronously (a name match could miss it
+# and open a duplicate).
+existing_tab_id=$("$script_dir/worktree-tab-id" "$path" | head -n1)
+
+if [ -n "$existing_tab_id" ]; then
+    zellij action go-to-tab-by-id "$existing_tab_id"
+    exit 0
+fi
+
+if { [ -n "${WT_CLAUDE_PROMPT:-}" ] || [ -n "${WT_ENABLED_MCPS:-}" ]; } && layout_file=$(resolve_layout_file); then
     zellij action new-tab \
         --layout-string "$(build_layout_with_args "$layout_file")" \
         --name "$name" --cwd "$path"
 else
     zellij action new-tab --layout layout --name "$name" --cwd "$path"
 fi
+
+# Upgrade the tab name to a short, meaningful AI-generated label in the
+# background (~10s, then cached forever for this worktree). Detached so it
+# outlives this hook invocation; no-ops for non-worktrees / already-cached
+# paths. See worktree-tab-namer for the full contract.
+nohup "$script_dir/worktree-tab-namer" "$path" >/dev/null 2>&1 &

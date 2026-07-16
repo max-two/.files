@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Background worker: generate a short, meaningful Zellij tab label for a
+# worktree with a fast Claude model, cache it, and rename the live tab.
+#
+# Spawned DETACHED by zellij-tab-open right after it creates a worktree tab.
+# The Claude call costs ~10s on this machine (see the CLAUDE.md Things-to-Know
+# note: OAuth is mandatory here — the org's managed settings reject any API key,
+# and OAuth `-p` has ~10s startup, so the fast `--bare`/CLAUDE_CODE_SIMPLE path
+# is unavailable). Because of that cost this MUST run in the background: the tab
+# is created immediately with project-list's deterministic fallback label, then
+# renamed here once the AI label is ready. The label is cached (keyed by
+# worktree path), so this runs at most once per worktree; every later open reads
+# the cache and gets the good label instantly via project-list.
+#
+# No-ops (leaving the fallback label in place) when: not in Zellij, the path is
+# not a worktree, a label is already cached, HEAD is detached, claude is
+# unavailable, generation returns nothing, or the tab is already gone.
+#
+# Usage: worktree-tab-namer <worktree-path>
+
+set -uo pipefail
+
+[ -z "${ZELLIJ:-}" ] && exit 0
+path="${1:-}"
+[ -n "$path" ] || exit 0
+
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+
+# Only name real worktrees. Reuse project-list's own repo-vs-worktree
+# classification and repo-name derivation instead of reinventing them here.
+row=$("$script_dir/project-list" 2>/dev/null | awk -F'\t' -v p="$path" '$2 == p { print; exit }')
+[ -n "$row" ] || exit 0
+[ "$(printf '%s' "$row" | cut -f3)" = "worktree" ] || exit 0
+
+# Already cached => the tab was created with the good label already.
+[ -n "$("$script_dir/worktree-name" get "$path")" ] && exit 0
+
+branch=$(git -C "$path" symbolic-ref --quiet --short HEAD 2>/dev/null) || exit 0
+[ -n "$branch" ] || exit 0
+
+# Resolve claude even when this context's PATH is minimal (frozen Zellij server
+# PATH, or the headless Linear launch environment).
+claude_bin=$(command -v claude 2>/dev/null || true)
+[ -x "$claude_bin" ] || claude_bin="$HOME/.local/bin/claude"
+[ -x "$claude_bin" ] || exit 0
+
+sys='You name a terminal tab for a git worktree from its branch name. The branch may begin with a username and short team code before the ticket number (e.g. "maxmckinley-eng-4521-..."); ignore that prefix but KEEP the ticket number. Reply with ONLY a label: lowercase, hyphen-separated, at most 18 characters, capturing the core intent in 1-3 words. No quotes, no explanation, no punctuation beyond hyphens.'
+
+# Run from an empty dir so no CLAUDE.md is auto-discovered into the request.
+gen_cwd="${XDG_CACHE_HOME:-$HOME/.cache}/worktree-tab-namer-cwd"
+mkdir -p "$gen_cwd"
+raw=$(cd "$gen_cwd" && "$claude_bin" -p --model haiku --system-prompt "$sys" "$branch" 2>/dev/null) || exit 0
+
+# Sanitize to a safe tab label: lowercase, keep [a-z0-9-] only, squeeze and trim
+# dashes, then hard-cap length as a final guard (project-list also caps at 25).
+label=$(printf '%s' "$raw" \
+    | tr '[:upper:]' '[:lower:]' \
+    | tr -c 'a-z0-9-' '-' \
+    | sed -E 's/-+/-/g; s/^-+//; s/-+$//' \
+    | cut -c1-24)
+[ -n "$label" ] || exit 0
+
+# Persist the label (worktree-name owns the store's format and atomicity).
+"$script_dir/worktree-name" set "$path" "$label"
+
+# Rename the live tab to exactly what project-list now produces for this path:
+# "<repo>┃<label>". repo is the part of the fallback name before the ┃ divider.
+repo="$(printf '%s' "$row" | cut -f1)"
+repo="${repo%%┃*}"
+fullname="${repo}┃${label}"
+
+# Resolve the tab by path at rename time (worktree-tab-id) and rename by id —
+# no focus change, unlike go-to-tab-name.
+tab_id=$("$script_dir/worktree-tab-id" "$path" | head -n1)
+[ -n "$tab_id" ] || exit 0
+
+zellij action rename-tab --tab-id "$tab_id" "$fullname"

@@ -1,30 +1,70 @@
 #!/usr/bin/env bash
-# Close all Zellij tabs whose panes have CWDs at or under <path>. Called from
-# post-remove — the worktree may already be gone, but pane CWDs still reflect
-# the path they were launched with.
-# Usage: zellij-tab-close <path>
+# Manage a worktree's Zellij tab across `wt remove`, in two hook phases:
+#
+#   zellij-tab-close capture <path>   (pre-remove)  record the tab id(s) now,
+#                                     while the worktree still exists and its
+#                                     panes' CWDs still match <path>.
+#   zellij-tab-close <path>           (post-remove) close those tab(s).
+#
+# Why two phases:
+#   * `wt remove` renames the worktree into <repo>/.bare/wt/trash/... BEFORE the
+#     post-remove hook runs, which changes the panes' CWDs — so a CWD lookup at
+#     post-remove finds nothing (this is what broke tab teardown when close
+#     switched from name-based to CWD-based matching). We capture the tab id(s)
+#     at pre-remove, while the worktree is still in place and CWDs still match.
+#   * The close itself must stay in post-remove. `Alt x` runs project-close as a
+#     floating pane in the current tab, so closing that tab during pre-remove
+#     (before removal) would kill the in-flight `wt remove` and leave the
+#     worktree half-removed. By post-remove the removal is already done, so
+#     closing — even project-close's own tab — is safe.
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
-path="$1"
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+capture_dir="${XDG_CACHE_HOME:-$HOME/.cache}/wt-tab-close"
 
-# Collect unique tab IDs that have panes rooted at this worktree.
-# Match requires exact path or path + "/" prefix to avoid collisions
-# (e.g. /code/mono/foo must not match /code/mono/foo-bar).
-tab_ids=$(zellij action list-panes --json 2>/dev/null \
-    | jq -r --arg p "$path" '
-        ($p + "/") as $prefix |
-        [.[] | select(.is_plugin == false and ((.pane_cwd // "") as $cwd | $cwd == $p or ($cwd | startswith($prefix))))]
-        | [.[].tab_id] | unique | .[]
-    ' 2>/dev/null)
+# Stable per-worktree capture filename. Both phases receive the same
+# {{ worktree_path }} from wt, so the cksum key matches across pre/post.
+capture_file() {
+    printf '%s/%s' "$capture_dir" "$(printf '%s' "$1" | cksum | cut -d' ' -f1)"
+}
 
+# --- pre-remove: capture phase ---
+if [ "${1:-}" = "capture" ]; then
+    path="${2:-}"
+    [ -n "$path" ] || exit 0
+    ids=$("$script_dir/worktree-tab-id" "$path")
+    [ -n "$ids" ] || exit 0
+    mkdir -p "$capture_dir"
+    printf '%s\n' "$ids" > "$(capture_file "$path")"
+    exit 0
+fi
+
+# --- post-remove: close phase ---
+path="${1:-}"
+[ -n "$path" ] || exit 0
+
+# Forget the cached tab-name label for this worktree.
+"$script_dir/worktree-name" clear "$path"
+
+# Prefer the pre-remove capture (CWDs no longer match after the trash rename);
+# fall back to a live CWD lookup when there's no capture (e.g. the worktree
+# wasn't trashed, or this was invoked directly rather than via the hooks).
+cf=$(capture_file "$path")
+if [ -r "$cf" ]; then
+    tab_ids=$(cat "$cf")
+    rm -f "$cf"
+else
+    tab_ids=$("$script_dir/worktree-tab-id" "$path")
+fi
 [ -z "$tab_ids" ] && exit 0
 
 current_id=$(zellij action current-tab-info --json 2>/dev/null \
     | jq -r '.tab_id // empty' 2>/dev/null)
 
-# Close non-focused tabs first by ID, then close the focused tab last
-# (close-tab-by-id is unreliable for the focused tab).
+# Close non-focused tabs first by ID, then the focused tab last (close-tab-by-id
+# is unreliable for the focused tab; closing it last also means any other tabs
+# are already handled if it happens to be project-close's own tab).
 close_current=false
 while IFS= read -r tid; do
     [ -z "$tid" ] && continue

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# The one piece of durable state we keep per worktree: its AI-generated short
+# tab-name label, keyed by worktree path. Written by worktree-tab-namer, read by
+# project-list, pruned by zellij-tab-close.
+#
+# This is the ONLY thing we persist about a worktree, and on purpose: a label is
+# data we own and that never goes stale (a branch's label doesn't change), so a
+# lost/missing entry just degrades to project-list's derived fallback name — it
+# can't cause a correctness bug. (Anything zellij owns — tab ids, focus — is
+# resolved live instead; see worktree-tab-id.)
+#
+# Store: TSV "path<TAB>label" at ${XDG_CACHE_HOME:-~/.cache}/worktree-tab-names.
+# `set` APPENDS a line — single-line appends under PIPE_BUF are atomic, so
+# concurrent namers (several tickets opened at once) can't corrupt the file, and
+# a re-`set` supersedes older lines because `get`/`dump` consumers take the last
+# line for a path. `clear` rewrites the file to drop a path.
+#
+# Usage:
+#   worktree-name get   <path>          print <path>'s label (empty if none)
+#   worktree-name set   <path> <label>  record <label> for <path>
+#   worktree-name clear <path>          forget <path>
+#   worktree-name dump                  print all entries as "path<TAB>label"
+
+set -uo pipefail
+
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/worktree-tab-names"
+
+case "${1:-}" in
+    get)
+        path="${2:-}"
+        { [ -n "$path" ] && [ -r "$cache" ]; } || exit 0
+        awk -F'\t' -v p="$path" '$1 == p { v = $2 } END { if (v != "") print v }' "$cache"
+        ;;
+    set)
+        path="${2:-}"
+        label="${3:-}"
+        { [ -n "$path" ] && [ -n "$label" ]; } || exit 0
+        mkdir -p "$(dirname "$cache")"
+        printf '%s\t%s\n' "$path" "$label" >> "$cache"
+        ;;
+    clear)
+        path="${2:-}"
+        { [ -n "$path" ] && [ -r "$cache" ]; } || exit 0
+        tmp=$(mktemp "${cache}.XXXXXX") \
+            && awk -F'\t' -v p="$path" '$1 != p' "$cache" > "$tmp" \
+            && mv "$tmp" "$cache"
+        ;;
+    dump)
+        [ -r "$cache" ] && cat "$cache"
+        exit 0
+        ;;
+    *)
+        echo "usage: worktree-name {get <path>|set <path> <label>|clear <path>|dump}" >&2
+        exit 2
+        ;;
+esac

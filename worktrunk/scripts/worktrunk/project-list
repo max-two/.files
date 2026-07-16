@@ -9,6 +9,16 @@
 set -euo pipefail
 shopt -s nullglob dotglob
 
+script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
+
+# Preload AI-generated tab-name labels (worktree path -> label) via worktree-name,
+# which owns the cache location and format. A missing cache is fine — flush()
+# falls back to the label derived from the branch. Last line wins.
+declare -A TAB_NAME_CACHE=()
+while IFS=$'\t' read -r cpath clabel || [ -n "$cpath" ]; do
+    [ -n "$cpath" ] && TAB_NAME_CACHE["$cpath"]="$clabel"
+done < <("$script_dir/worktree-name" dump)
+
 emit_worktrees() {
     local repo="$1" repo_dir="$2"
     local current_path="" branch="" is_bare=0 in_entry=0
@@ -23,6 +33,9 @@ emit_worktrees() {
         # ticket number are enough), keeping <number>-<title>. Non-Linear branches
         # not matching <word>-<letters>-<digits>-... are left untouched.
         [[ "$sanitized" =~ ^[A-Za-z0-9]+-[A-Za-z]+-([0-9]+-.+)$ ]] && sanitized="${BASH_REMATCH[1]}"
+        # Prefer an AI-generated label (worktree-tab-namer) when one is cached
+        # for this worktree; otherwise use the derived branch portion.
+        [ -n "${TAB_NAME_CACHE["$current_path"]:-}" ] && sanitized="${TAB_NAME_CACHE["$current_path"]}"
         # length-limit the branch portion shown in the tab name
         [ "${#sanitized}" -gt 25 ] && sanitized="${sanitized:0:25}"
         if [ "$current_path" = "$repo_dir" ] && [ -d "$repo_dir/.git" ]; then
