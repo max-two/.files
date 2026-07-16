@@ -8,4 +8,26 @@ layout {
             plugin location="zjstatus"
         }
     }
+
+    // On a fresh session, open the .files repo in the worktree layout (claude +
+    // Helix on README + terminal) instead of an empty shell. Only the panes are
+    // declared here; the zjstatus bar is appended by default_tab_template above,
+    // which wraps every tab in this layout (this is also how the old single
+    // empty tab got its bar). The pane block is intentionally duplicated from
+    // layouts/layout.kdl (the worktree layout) minus its own bar: zellij has no
+    // way to share a pane block across layout files — templates are file-scoped
+    // and there's no include directive (zellij-org/zellij#3835) — so keep the
+    // two in sync. Ignored when re-attaching to an existing session (attach -c
+    // only applies the layout when creating), so it only fires on a new session.
+    tab name=".files" cwd="/Users/max.mckinley/code/.files" {
+        pane split_direction="vertical" {
+            pane command="claude" size="50%" focus=true close_on_exit=true
+            pane stacked=true size="50%" {
+                pane command="hx" expanded=true close_on_exit=true {
+                    args "README.md"
+                }
+                pane name="terminal"
+            }
+        }
+    }
 }

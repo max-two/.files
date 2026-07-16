@@ -1,6 +1,8 @@
 // Worktree/Claude tab layout (opened by worktrunk's zellij-tab-open). Uses the
 // custom `zjstatus` status bar (alias + config defined in config.kdl) to match
-// the default layout.
+// the default layout. NOTE: the pane block below is mirrored by the startup
+// `.files` tab in layouts/default.kdl — zellij can't share a pane block across
+// layout files (zellij-org/zellij#3835), so keep the two in sync.
 layout {
     tab {
         pane split_direction="vertical" {
