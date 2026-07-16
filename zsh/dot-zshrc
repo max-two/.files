@@ -63,19 +63,25 @@ export _ZO_MAXAGE=100000
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Aliases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-alias rc='source $HOME/.zshrc'
-alias zshrc='hx $HOME/.zshrc'
-alias h='hx'
-alias g='git'
-alias ls='eza --color --icons --all --group-directories-first'
-alias ll='eza --long --header --time-style=relative --no-filesize --tree --level=2 --color --icons --all --group-directories-first'
-alias z='zed'
-alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
-alias cat='bat'
-alias brew-up='brew update && brew upgrade --cask --greedy obsidian && brew upgrade'
-alias ...='popd'
-alias claude-logs='tail -f ~/.claude/logs/session_$(cat ~/.claude/logs/.current_session).log'
-alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help
+# Interactive shells only. These swap in different default tools (ls->eza, cat->bat,
+# etc.) — human ergonomics. Non-interactive shells (scripts, and the shells AI agents
+# like Claude Code run, which source a captured snapshot of this file) must keep the
+# vanilla tools, or things like `ls -t` break (eza's -t means something else).
+if [[ -o interactive ]]; then
+  alias rc='source $HOME/.zshrc'
+  alias zshrc='hx $HOME/.zshrc'
+  alias h='hx'
+  alias g='git'
+  alias ls='eza --color --icons --all --group-directories-first'
+  alias ll='eza --long --header --time-style=relative --no-filesize --tree --level=2 --color --icons --all --group-directories-first'
+  alias z='zed'
+  alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
+  alias cat='bat'
+  alias brew-up='brew update && brew upgrade --cask --greedy obsidian && brew upgrade'
+  alias ...='popd'
+  alias claude-logs='tail -f ~/.claude/logs/session_$(cat ~/.claude/logs/.current_session).log'
+  alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help
+fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Keybindings
