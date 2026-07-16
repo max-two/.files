@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Three-step worktree creation: pick a repo, type a branch name, choose MCPs.
+# Two-step worktree creation: pick a repo, type a branch name.
 # Delegates to worktrunk; the post-switch hook creates the Zellij tab.
 
 set -euo pipefail
@@ -40,9 +40,5 @@ branch=$(fzf \
     < /dev/null 2>/dev/null | xargs)
 
 [ -z "$branch" ] && exit 0
-
-# Step 3: choose which MCP servers to enable for this worktree's Claude session.
-enabled=$("$script_dir/mcp-picker") || exit 0
-[ -n "$enabled" ] && export WT_ENABLED_MCPS="$enabled"
 
 wt -C "$repo_path" switch --create "$branch"

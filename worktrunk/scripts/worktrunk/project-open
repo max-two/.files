@@ -46,7 +46,4 @@ END {
 
 IFS=$'\t' read -r _ path <<< "$selection"
 
-enabled=$("$script_dir/mcp-picker") || exit 0
-[ -n "$enabled" ] && export WT_ENABLED_MCPS="$enabled"
-
 "$script_dir/zellij-tab-open" "$path"
