@@ -146,6 +146,16 @@ keybinds {
                 close_on_exit true
             }
         }
+        // Restart Claude in the current pane, resuming the session (--continue).
+        // in_place suspends the old pane and execs the new Claude in its place;
+        // project-refresh first sweeps stale suspended panes so their
+        // zellij-attention icons don't get stuck (see the script header).
+        bind "Alt z" {
+            Run "project-refresh" {
+                in_place true
+                close_on_exit true
+            }
+        }
         bind "Alt x" {
             Run "project-close" {
                 floating true
