@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Status line script for Claude Code
-# Line 1:  project_dir • worktree •  branch (color = git state) • PR↗
+# Line 1:  path (home-relative) •  branch (color = git state) • PR↗
 # Line 2: model [effort] • progress_bar pct% •  tokens • cost • [agent]
 # Caches git status and PR link (5s)
 
@@ -71,14 +71,6 @@ if cache_is_stale "$GIT_CACHE"; then
         MODIFIED=$(git -C "$PROJECT_DIR" diff --numstat 2>/dev/null | wc -l | tr -d ' ')
         UNTRACKED=$(git -C "$PROJECT_DIR" ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
 
-        GIT_COMMON=$(git -C "$PROJECT_DIR" rev-parse --git-common-dir 2>/dev/null)
-        GIT_DIR=$(git -C "$PROJECT_DIR" rev-parse --git-dir 2>/dev/null)
-        if [ "$GIT_COMMON" != "$GIT_DIR" ] && [ -n "$GIT_COMMON" ]; then
-            WORKTREE=$(basename "$PROJECT_DIR")
-        else
-            WORKTREE=""
-        fi
-
         CLEAN=0
         [ "$STAGED" -eq 0 ] && [ "$MODIFIED" -eq 0 ] && [ "$UNTRACKED" -eq 0 ] && CLEAN=1
 
@@ -87,13 +79,13 @@ if cache_is_stale "$GIT_CACHE"; then
         AHEAD=$(git -C "$PROJECT_DIR" rev-list --count '@{upstream}..HEAD' 2>/dev/null || echo 0)
         [ -z "$AHEAD" ] && AHEAD=0
 
-        echo "${BRANCH}|${STAGED}|${MODIFIED}|${UNTRACKED}|${CLEAN}|${WORKTREE}|${AHEAD}" > "$GIT_CACHE"
+        echo "${BRANCH}|${STAGED}|${MODIFIED}|${UNTRACKED}|${CLEAN}|${AHEAD}" > "$GIT_CACHE"
     else
-        echo "||||||" > "$GIT_CACHE"
+        echo "|||||" > "$GIT_CACHE"
     fi
 fi
 
-IFS='|' read -r BRANCH STAGED MODIFIED UNTRACKED CLEAN WORKTREE AHEAD < "$GIT_CACHE"
+IFS='|' read -r BRANCH STAGED MODIFIED UNTRACKED CLEAN AHEAD < "$GIT_CACHE"
 
 # --- PR link (cached) ---
 PR_CACHE="$CACHE_DIR/pr_${CACHE_KEY}"
@@ -124,15 +116,19 @@ join_parts() {
 }
 
 # ============================================================
-# LINE 1: [project_dir] • worktree •  branch status • PR↗
+# LINE 1: [path] •  branch status • PR↗
 # ============================================================
 L1_PARTS=()
 
-L1_PARTS+=("${BLUE}${FOLDER_ICON} ${PROJECT_DIR##*/}${RESET}")
-
-if [ -n "$WORKTREE" ]; then
-    L1_PARTS+=("${MAGENTA}${WORKTREE}${RESET}")
-fi
+# Home-relative path with a leading ~ (matches the p10k prompt's home style).
+# Portable prefix strip — avoids the ${var/#pat/repl} anchored-substitution
+# form, which silently no-ops under Homebrew bash 5.x.
+case "$PROJECT_DIR" in
+    "$HOME") DISPLAY_PATH="~" ;;
+    "$HOME"/*) DISPLAY_PATH="~${PROJECT_DIR#"$HOME"}" ;;
+    *) DISPLAY_PATH="$PROJECT_DIR" ;;
+esac
+L1_PARTS+=("${BLUE}${FOLDER_ICON} ${DISPLAY_PATH}${RESET}")
 
 if [ -n "$BRANCH" ]; then
     # Branch icon + name colored by state: orange = local changes,
