@@ -29,12 +29,11 @@ emit_worktrees() {
         local name type
         local sanitized
         sanitized=$(printf '%s' "$branch" | tr '/\\' '--')
-        # Strip Linear's "<username>-<team>-" prefix (noise — the repo name and
-        # ticket number are enough), keeping <number>-<title>. Non-Linear branches
-        # not matching <word>-<letters>-<digits>-... are left untouched.
-        [[ "$sanitized" =~ ^[A-Za-z0-9]+-[A-Za-z]+-([0-9]+-.+)$ ]] && sanitized="${BASH_REMATCH[1]}"
         # Prefer an AI-generated label (worktree-tab-namer) when one is cached
-        # for this worktree; otherwise use the derived branch portion.
+        # for this worktree; otherwise use the derived branch portion. This is
+        # only the interim fallback shown until the AI namer renames the tab, so
+        # no branch-name massaging (e.g. Linear prefix stripping) is done here —
+        # the AI label supersedes it within seconds.
         [ -n "${TAB_NAME_CACHE["$current_path"]:-}" ] && sanitized="${TAB_NAME_CACHE["$current_path"]}"
         # length-limit the branch portion shown in the tab name
         [ "${#sanitized}" -gt 25 ] && sanitized="${sanitized:0:25}"
