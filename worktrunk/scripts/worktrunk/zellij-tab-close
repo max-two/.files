@@ -1,30 +1,38 @@
 #!/usr/bin/env bash
-# Close the Zellij tab for the project at <path>. Called from post-remove,
-# so the path may no longer exist — derive the tab name from path components.
+# Close all Zellij tabs whose panes have CWDs at or under <path>. Called from
+# post-remove — the worktree may already be gone, but pane CWDs still reflect
+# the path they were launched with.
 # Usage: zellij-tab-close <path>
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
 path="$1"
-parent=$(dirname "$path")
 
-# For bare-repo worktrees, the basename of the worktree directory IS the
-# sanitized branch name (worktrunk's worktree-path template uses
-# `{{ branch | sanitize }}` for the leaf). So we can construct the tab
-# name without invoking git on a path that may already be gone.
-name="$(basename "$parent") / $(basename "$path")"
+# Collect unique tab IDs that have panes rooted at this worktree.
+# Match requires exact path or path + "/" prefix to avoid collisions
+# (e.g. /code/mono/foo must not match /code/mono/foo-bar).
+tab_ids=$(zellij action list-panes --json 2>/dev/null \
+    | jq -r --arg p "$path" '
+        ($p + "/") as $prefix |
+        [.[] | select(.is_plugin == false and ((.pane_cwd // "") as $cwd | $cwd == $p or ($cwd | startswith($prefix))))]
+        | [.[].tab_id] | unique | .[]
+    ' 2>/dev/null)
 
-# If the user is currently on the target tab, close-tab-by-id can be
-# unreliable. Use plain close-tab for that case (closes the focused tab).
-# For any other tab, use close-tab-by-id so the user's focus doesn't move.
-current_name=$(zellij action current-tab-info --json 2>/dev/null \
-    | jq -r '.name // empty' 2>/dev/null)
+[ -z "$tab_ids" ] && exit 0
 
-if [ "$current_name" = "$name" ]; then
-    zellij action close-tab
-else
-    target_id=$(zellij action list-tabs --json 2>/dev/null \
-        | jq -r --arg n "$name" '.[] | select(.name == $n) | .tab_id' 2>/dev/null \
-        | head -1)
-    [ -n "$target_id" ] && zellij action close-tab-by-id "$target_id"
-fi
+current_id=$(zellij action current-tab-info --json 2>/dev/null \
+    | jq -r '.tab_id // empty' 2>/dev/null)
+
+# Close non-focused tabs first by ID, then close the focused tab last
+# (close-tab-by-id is unreliable for the focused tab).
+close_current=false
+while IFS= read -r tid; do
+    [ -z "$tid" ] && continue
+    if [ "$tid" = "$current_id" ]; then
+        close_current=true
+    else
+        zellij action close-tab-by-id "$tid"
+    fi
+done <<< "$tab_ids"
+
+[ "$close_current" = true ] && zellij action close-tab
