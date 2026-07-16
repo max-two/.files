@@ -261,4 +261,10 @@ ui {
     }
 }
 
+// Disable the mouse-hover visual effects (frame highlight → orange border + the
+// help/hint text in the bottom frame). Default is true. This ONLY affects the
+// visual effects; advanced_mouse_actions (pane grouping + zellij:link file-path
+// hover) is left enabled.
+mouse_hover_effects false
+
 show_startup_tips false
