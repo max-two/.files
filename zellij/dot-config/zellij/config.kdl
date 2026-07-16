@@ -113,6 +113,10 @@ keybinds {
         bind "Alt h" { GoToPreviousTab; }
         bind "Alt l" { GoToNextTab; }
 
+        // Reorder the focused tab with Alt + Shift + h/l (mirrors the nav binds)
+        bind "Alt Shift h" { MoveTab "Left"; }
+        bind "Alt Shift l" { MoveTab "Right"; }
+
         // Toggle fullscreen for the focused pane
         bind "Ctrl f" { ToggleFocusFullscreen; }
 

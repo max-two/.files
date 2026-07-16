@@ -77,3 +77,9 @@ Alt+h
 
 # Next tab (direct)
 Alt+l
+
+# Move tab left (direct)
+Alt+Shift+h
+
+# Move tab right (direct)
+Alt+Shift+l
