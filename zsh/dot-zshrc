@@ -26,10 +26,15 @@ typeset -gx _P9K_SSH_TTY=$TTY
 # Exports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Path (base PATH additions are in .zshenv so non-interactive shells get them too)
-BREW_PREFIX=$(brew --prefix)
-
-# Homebrew
+# Homebrew shell env: sets HOMEBREW_PREFIX/CELLAR/REPOSITORY, INFOPATH, and the brew
+# completions fpath. PATH itself is already built in ~/.zsh_path.zsh (sourced by
+# .zshenv/.zprofile), so brew shellenv's PATH line is a no-op here (it won't re-prepend
+# an already-present /opt/homebrew/bin) — this is purely for the env vars the completions
+# + antidote lines below rely on ($HOMEBREW_PREFIX). Guarded so the ~60ms call runs once
+# per process tree; kept here (not .zshenv) so it doesn't cost non-interactive shells.
+if [[ -z "$HOMEBREW_PREFIX" && -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 export HOMEBREW_NO_ANALYTICS=1 # Turn off analytics
 export HOMEBREW_NO_ENV_HINTS=1 # Turn off hints
 
@@ -123,7 +128,7 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 -a --color=always $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 -a --color=always $realpath' # Show fzf directory previews for zoxide
 
 # Brewfile
-brew_completion=$BREW_PREFIX/share/zsh/zsh-site-functions
+brew_completion=$HOMEBREW_PREFIX/share/zsh/zsh-site-functions
 if [ -d "$brew_completion" ];then
   fpath=($brew_completion $fpath)
 fi
@@ -144,7 +149,7 @@ fi
 # Antidote
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-source $BREW_PREFIX/opt/antidote/share/antidote/antidote.zsh
+source $HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh
 antidote load
 
 

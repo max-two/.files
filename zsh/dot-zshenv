@@ -1,10 +1,8 @@
-# Path additions that should be available to all zsh invocations
-# (including non-interactive, e.g. Zellij command panes, Claude Code agents)
-typeset -U path
-path=("$HOME/.local/bin" "$HOME/scripts" "$HOME"/scripts/*(N-/) $path)
-export PATH
-# fnm's default Node (yarn, node, npm, tsc, etc.) — follows `fnm default`
-export PATH="$HOME/.local/share/fnm/aliases/default/bin:$PATH"
+# PATH + Homebrew: single source of truth in ~/.zsh_path.zsh, sourced here so ALL
+# zsh invocations — including non-interactive ones (Zellij command panes, scripts,
+# AI-agent shells) — get the full PATH, and again from .zprofile to re-assert order
+# after macOS path_helper (see that file). Keep this the ONLY place PATH is built.
+source "$HOME/.zsh_path.zsh"
 
 # Point Zellij at the real config path. The stow symlink breaks its
 # filesystem watcher, so edits to config.kdl don't auto-reload.
