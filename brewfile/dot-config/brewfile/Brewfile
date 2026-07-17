@@ -15,6 +15,7 @@ brew gh
 brew git-lfs
 brew glow
 brew helix
+brew marksman
 brew navi
 brew pyright
 brew ripgrep
