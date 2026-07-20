@@ -14,7 +14,7 @@ script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 # ┃ project-list uses to join repo┃branch: 3 bytes but 1 display column, so
 # byte-counting awk must discount it to keep the path column aligned.
 sep=$(printf '\342\224\203')  # U+2503 ┃
-selection=$("$script_dir/project-list" | awk -F'\t' -v sep="$sep" '
+list=$("$script_dir/project-list" | awk -F'\t' -v sep="$sep" '
 function dispw(s,   t) { t = s; return length(s) - 2 * gsub(sep, "", t) }
 function pad(s, w,   n) { n = w - dispw(s); return (n < 1) ? s : s sprintf("%*s", n, "") }
 $3 == "worktree" {
@@ -27,10 +27,30 @@ END {
         printf "%s  %s\t%s\n", pad(f[1], wn), f[2], f[2]
     }
 }
-' | fzf \
+')
+
+[ -z "$list" ] && exit 0
+
+# Default the fzf cursor to the current tab's worktree, if this tab is one.
+# The keybind launches project-close as a floating pane, which inherits the
+# focused pane's cwd (see config.kdl), so `git rev-parse --show-toplevel` from
+# here resolves the worktree we're in. Match it against each row's path (the
+# 2nd, tab-delimited field) and pre-position via fzf's `start` event — which
+# needs `--sync` so the list is fully loaded before pos() runs. Not in a listed
+# worktree (e.g. a main repo, or outside git) → no --bind, cursor stays on the
+# first entry.
+pos_bind=()
+current_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [ -n "$current_root" ]; then
+    n=$(printf '%s\n' "$list" | awk -F'\t' -v p="$current_root" '$2 == p { print NR; exit }')
+    [ -n "$n" ] && pos_bind=(--sync --bind "start:pos($n)")
+fi
+
+selection=$(printf '%s\n' "$list" | fzf \
     --multi \
     --delimiter=$'\t' \
     --with-nth=1 \
+    "${pos_bind[@]}" \
     --prompt='close> ' \
     --header='tab: toggle  enter: remove selected  esc: cancel')
 
