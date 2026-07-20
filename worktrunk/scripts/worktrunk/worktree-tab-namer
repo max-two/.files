@@ -46,10 +46,15 @@ claude_bin=$(command -v claude 2>/dev/null || true)
 
 sys='You name a terminal tab for a git worktree from its branch name. The branch may begin with a username and short team code before the ticket number (e.g. "maxmckinley-eng-4521-..."); ignore that prefix but KEEP the ticket number. Reply with ONLY a label: lowercase, hyphen-separated, at most 18 characters, capturing the core intent in 1-3 words. No quotes, no explanation, no punctuation beyond hyphens.'
 
-# Run from an empty dir so no CLAUDE.md is auto-discovered into the request.
+# --safe-mode runs plain Haiku with all customizations off — global CLAUDE.md,
+# hooks (incl. the verification-proof Stop hook), MCP, and skills — so none of
+# my personal context (or a verification block) can leak into the label. Auth,
+# model, and permissions still work normally, unlike --bare, which forbids OAuth
+# and would trip the org's API-key ban. cwd stays a neutral empty dir so session
+# files / warnings don't land in a real repo.
 gen_cwd="${XDG_CACHE_HOME:-$HOME/.cache}/worktree-tab-namer-cwd"
 mkdir -p "$gen_cwd"
-raw=$(cd "$gen_cwd" && "$claude_bin" -p --model haiku --system-prompt "$sys" "$branch" 2>/dev/null) || exit 0
+raw=$(cd "$gen_cwd" && "$claude_bin" -p --safe-mode --model haiku --system-prompt "$sys" "$branch" 2>/dev/null) || exit 0
 
 # Sanitize to a safe tab label: lowercase, keep [a-z0-9-] only, squeeze and trim
 # dashes, then hard-cap length as a final guard (project-list also caps at 25).
