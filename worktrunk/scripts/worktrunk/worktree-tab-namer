@@ -16,13 +16,19 @@
 # not a worktree, a label is already cached, HEAD is detached, claude is
 # unavailable, generation returns nothing, or the tab is already gone.
 #
-# Usage: worktree-tab-namer <worktree-path>
+# Usage: worktree-tab-namer <worktree-path> [tab-id]
+#
+# When a tab-id is given (zellij-tab-open passes the id `new-tab` returned when
+# it created the tab), the rename targets that id directly — no runtime tab
+# lookup, so it can't be defeated by the tab resolver missing. Without one, it
+# falls back to resolving the tab by path (for manual/standalone invocation).
 
 set -uo pipefail
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 path="${1:-}"
 [ -n "$path" ] || exit 0
+tab_id_arg="${2:-}"
 
 script_dir=$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")
 
@@ -74,9 +80,12 @@ repo="$(printf '%s' "$row" | cut -f1)"
 repo="${repo%%┃*}"
 fullname="${repo}┃${label}"
 
-# Resolve the tab by path at rename time (worktree-tab-id) and rename by id —
-# no focus change, unlike go-to-tab-name.
-tab_id=$("$script_dir/worktree-tab-id" "$path" | head -n1)
+# Rename by tab id — no focus change, unlike go-to-tab-name. Prefer the id
+# handed in by zellij-tab-open (the tab it just created, which is exactly the
+# one we're naming), so the rename never depends on a runtime tab lookup. Only
+# fall back to resolving by path when invoked without an id.
+tab_id="$tab_id_arg"
+[ -n "$tab_id" ] || tab_id=$("$script_dir/worktree-tab-id" "$path" | head -n1)
 [ -n "$tab_id" ] || exit 0
 
 zellij action rename-tab --tab-id "$tab_id" "$fullname"
