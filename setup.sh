@@ -10,6 +10,9 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 brew install stow
 brew install rcmdnk/file/brew-file
 
+# Homebrew 6 requires explicit trust before loading third-party formulae.
+brew trust --formula rcmdnk/file/brew-file anomalyco/tap/opencode umputun/apps/revdiff
+
 # Setup dotfiles
 stow brewfile
 stow zsh
