@@ -1,6 +1,11 @@
 # Install homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+# Put brew on PATH for the rest of this script. A fresh Apple Silicon install
+# does NOT add /opt/homebrew/bin to the current shell's PATH, so the brew calls
+# below would fail with command-not-found without this.
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 # Install stow and brewfile
 brew install stow
 brew install rcmdnk/file/brew-file

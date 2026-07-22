@@ -3,8 +3,12 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if [[ -z "$ZELLIJ" ]]; then
-  zellij --layout default attach -c
-  exit
+  if zellij --layout default attach -c; then
+    exit
+  fi
+  # zellij failed to start (missing/bad config, version mismatch, …) — fall
+  # through to a normal interactive shell instead of running `exit`, which
+  # would close the terminal window and leave you with no usable shell.
 fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,5 +233,9 @@ if [[ -o interactive ]]; then
   }
 fi
 
-# Vite+ bin (https://viteplus.dev)
-. "$HOME/.vite-plus/env"
+# Vite+ (https://viteplus.dev). Also sourced in .zshenv — that copy sets PATH +
+# the `vp` function for ALL shells (incl. non-interactive Zellij command panes).
+# This copy is NOT redundant: the file's completion block needs `compdef`, which
+# only exists after `compinit` runs above, so .zshenv's early source silently
+# skips completions. This is the only place `vp`/`vpr` completions get wired up.
+[[ -f "$HOME/.vite-plus/env" ]] && . "$HOME/.vite-plus/env"
