@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Restart Claude in the current pane, resuming the previous session.
-# Runs in-place in the Claude pane (Alt+z keybind with in_place=true).
-# The old Claude is suspended by Zellij; exec replaces this script with
-# the new Claude process in the same pane position.
+# Restart the configured AI in the current pane, resuming the previous session.
+# Runs in-place in the AI pane (Alt+z keybind with in_place=true). The old AI is
+# suspended by Zellij; exec replaces this script with the new process in the
+# same pane position.
 #
 # in_place stacks suspended panes that can never regain focus, so
 # zellij-attention notifications set against them persist forever (the
@@ -27,4 +27,4 @@ zellij action list-panes --state --tab --json 2>/dev/null \
     done
 zellij action focus-pane-id "terminal_${ZELLIJ_PANE_ID}" 2>/dev/null || true
 
-exec claude --continue
+exec ai-panel --continue

@@ -1,4 +1,4 @@
-// Worktree/Claude tab layout (opened by worktrunk's zellij-tab-open). Uses the
+// Worktree/AI tab layout (opened by worktrunk's zellij-tab-open). Uses the
 // custom `zjstatus` status bar (alias + config defined in config.kdl) to match
 // the default layout. NOTE: the pane block below is mirrored by the startup
 // `.files` tab in layouts/default.kdl — zellij can't share a pane block across
@@ -6,7 +6,7 @@
 layout {
     tab {
         pane split_direction="vertical" {
-            pane command="claude" size="50%" focus=true close_on_exit=true
+            pane command="ai-panel" size="50%" focus=true close_on_exit=true
             pane stacked=true size="50%" {
                 pane command="hx" expanded=true close_on_exit=false {
                     args "README.md"

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Launch the AI CLI selected for this machine's Zellij layout.
+#
+# Set ZELLIJ_AI_COMMAND=opencode in ~/.localenv to use OpenCode. Claude is the
+# default so work machines need no local configuration. The layout passes a
+# possible initial prompt and --continue; translate the prompt for OpenCode,
+# whose positional argument is a project path rather than a prompt.
+
+set -euo pipefail
+
+case "${ZELLIJ_AI_COMMAND:-claude}" in
+    claude)
+        exec claude "$@"
+        ;;
+    opencode)
+        prompt=""
+        opencode_args=()
+
+        for arg in "$@"; do
+            case "$arg" in
+                --continue)
+                    opencode_args+=("--continue")
+                    ;;
+                *)
+                    if [ -n "$prompt" ]; then
+                        printf '%s\n' "ai-panel: OpenCode accepts one initial prompt" >&2
+                        exit 2
+                    fi
+                    prompt="$arg"
+                    ;;
+            esac
+        done
+
+        [ -z "$prompt" ] || opencode_args+=("--prompt" "$prompt")
+        exec opencode "${opencode_args[@]}"
+        ;;
+    *)
+        printf '%s\n' "ai-panel: unsupported ZELLIJ_AI_COMMAND: ${ZELLIJ_AI_COMMAND}" >&2
+        exit 2
+        ;;
+esac

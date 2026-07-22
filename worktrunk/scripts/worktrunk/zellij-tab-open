@@ -6,10 +6,9 @@
 #
 # If WT_CLAUDE_PROMPT is set in the environment when a NEW tab is created, the
 # tab is opened from a copy of the `layout` layout with that prompt injected
-# as an argument to the `claude` pane (so Claude starts already working on
-# it). This is how the Linear integration (linear-work) seeds a worktree's
-# Claude session. The manual Alt+n flow leaves the var unset and is
-# unaffected, as is re-opening (focusing) an existing tab.
+# into the ai-panel command. This is how the Linear integration (linear-work)
+# seeds a worktree's AI session. The manual Alt+n flow leaves the var unset and
+# is unaffected, as is re-opening (focusing) an existing tab.
 
 [ -z "${ZELLIJ:-}" ] && exit 0
 
@@ -43,8 +42,8 @@ kdl_fence() {
     printf '%*s' "$((maxrun + 1))" '' | tr ' ' '#'
 }
 
-# Emit the `layout` KDL with extra args injected into the claude pane.
-# Uses WT_CLAUDE_PROMPT (and WT_CLAUDE_CONTINUE, if set) from the environment.
+# Emit the `layout` KDL with extra args injected into the AI pane. Uses
+# WT_CLAUDE_PROMPT (and WT_CLAUDE_CONTINUE, if set) from the environment.
 build_layout_with_args() {
     local file="$1"
     local args_line=""
@@ -62,7 +61,7 @@ build_layout_with_args() {
     [ -z "$args_line" ] && { cat "$file"; return; }
 
     ARGS_LINE="$args_line" awk '
-        !injected && /command="claude"/ {
+        !injected && /command="ai-panel"/ {
             printf "%s {\n", $0
             printf "            args %s\n", ENVIRON["ARGS_LINE"]
             printf "        }\n"
