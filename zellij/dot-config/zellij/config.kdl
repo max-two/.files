@@ -67,7 +67,7 @@ plugins {
 
         // Battery: script emits a Nerd Font glyph + %, self-coloured by charge range
         // (green/yellow/red, blue when charging). rendermode "dynamic" renders its #[..].
-        command_battery_command    "/Users/max.mckinley/scripts/battery/battery-status"
+        command_battery_command    "battery-status"
         command_battery_format     "{stdout}"
         command_battery_interval   "60"
         command_battery_rendermode "dynamic"
@@ -231,7 +231,7 @@ keybinds {
             }
         }
         bind "Ctrl Shift r" {
-            Run "touch" "/Users/max.mckinley/.config/zellij/config.kdl" {
+            Run "zellij-reload-config" {
                 close_on_exit true
             }
         }

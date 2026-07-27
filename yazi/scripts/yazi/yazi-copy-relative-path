@@ -10,4 +10,4 @@ else
     relative="$file"
 fi
 
-printf '%s' "$relative" | pbcopy
+printf '%s' "$relative" | clip

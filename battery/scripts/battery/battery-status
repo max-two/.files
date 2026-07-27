@@ -6,6 +6,9 @@
 #   >= 80%       -> 󰁹  green
 #   21-79%       -> 󰁾  yellow
 #   <= 20%       -> 󰂎  red
+# macOS-only: battery state comes from pmset. On Linux (e.g. the headless Coder box,
+# which has no battery) there's no pmset — emit nothing so the zjstatus segment is empty.
+command -v pmset >/dev/null 2>&1 || exit 0
 batt=$(pmset -g batt 2>/dev/null)
 [ -z "$batt" ] && exit 0
 

@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-open "$(yazi-github-url "$1")"
+url="$(yazi-github-url "$1")"
+if [[ "$(uname)" == "Darwin" ]]; then
+  open "$url"
+elif command -v xdg-open >/dev/null 2>&1 && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
+  xdg-open "$url"
+else
+  # Headless (e.g. the Coder box): no browser to open — copy the URL to the
+  # clipboard (lands in the Mac clipboard via clip's OSC 52 path) instead.
+  printf '%s' "$url" | clip
+  echo "no browser here — copied URL to clipboard: $url" >&2
+fi

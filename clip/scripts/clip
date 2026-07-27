@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# clip — portable "copy stdin to the clipboard".
+#
+#   macOS:                    pbcopy
+#   Linux with a display:     wl-copy (Wayland) / xclip (X11)
+#   Headless (SSH / the Coder box): OSC 52 written to the controlling terminal,
+#                             which Ghostty on your Mac turns into the local Mac
+#                             clipboard — it rides out through Zellij + SSH as
+#                             ordinary terminal output, so no clipboard daemon is
+#                             needed on the remote.
+#
+# Usage:  <something> | clip
+set -euo pipefail
+
+data="$(cat)"
+
+if command -v pbcopy >/dev/null 2>&1; then
+  printf '%s' "$data" | pbcopy
+elif [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
+  printf '%s' "$data" | wl-copy
+elif [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
+  printf '%s' "$data" | xclip -selection clipboard
+else
+  # OSC 52: ESC ] 52 ; c ; <base64> BEL. Write to /dev/tty so it reaches the
+  # terminal emulator even when this script's stdout is captured by a caller.
+  b64="$(printf '%s' "$data" | base64 | tr -d '\n')"
+  printf '\033]52;c;%s\a' "$b64" > /dev/tty
+fi

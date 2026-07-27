@@ -33,11 +33,13 @@ typeset -gx _P9K_SSH_TTY=$TTY
 # Homebrew shell env: sets HOMEBREW_PREFIX/CELLAR/REPOSITORY, INFOPATH, and the brew
 # completions fpath. PATH itself is already built in ~/.zsh_path.zsh (sourced by
 # .zshenv/.zprofile), so brew shellenv's PATH line is a no-op here (it won't re-prepend
-# an already-present /opt/homebrew/bin) — this is purely for the env vars the completions
-# + antidote lines below rely on ($HOMEBREW_PREFIX). Guarded so the ~60ms call runs once
-# per process tree; kept here (not .zshenv) so it doesn't cost non-interactive shells.
-if [[ -z "$HOMEBREW_PREFIX" && -x /opt/homebrew/bin/brew ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+# the already-present brew bin) — this is purely for the env vars the completions
+# + antidote lines below rely on ($HOMEBREW_PREFIX). $_brew_prefix is detected in
+# ~/.zsh_path.zsh and reused here (resolves /opt/homebrew on macOS, linuxbrew on Linux).
+# Guarded so the ~60ms call runs once per process tree; kept here (not .zshenv) so it
+# doesn't cost non-interactive shells.
+if [[ -z "$HOMEBREW_PREFIX" && -n "$_brew_prefix" && -x "$_brew_prefix/bin/brew" ]]; then
+  eval "$("$_brew_prefix/bin/brew" shellenv)"
 fi
 export HOMEBREW_NO_ANALYTICS=1 # Turn off analytics
 export HOMEBREW_NO_ENV_HINTS=1 # Turn off hints
@@ -81,7 +83,11 @@ if [[ -o interactive ]]; then
   alias z='zed'
   alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
   alias cat='bat'
-  alias brew-up='brew update && brew upgrade --cask --greedy obsidian && brew upgrade'
+  if [[ "$OSTYPE" == darwin* ]]; then
+    alias brew-up='brew update && brew upgrade --cask --greedy obsidian && brew upgrade'
+  else
+    alias brew-up='brew update && brew upgrade'   # linuxbrew has no cask support
+  fi
   alias ...='popd'
   alias claude-logs='tail -f ~/.claude/logs/session_$(cat ~/.claude/logs/.current_session).log'
   alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help

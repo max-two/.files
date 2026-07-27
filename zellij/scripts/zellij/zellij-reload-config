@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Touch the live Zellij config so Zellij's filesystem watcher reloads it. Bound to
+# Ctrl+Shift+r in config.kdl. The path is resolved at runtime — $ZELLIJ_CONFIG_FILE
+# (set in .zshenv to the repo's real config, since the stow symlink breaks the
+# watcher), else the default location — so there's no hardcoded home path and it
+# works on any machine / OS. `touch` follows the symlink to the underlying file.
+set -euo pipefail
+touch "${ZELLIJ_CONFIG_FILE:-$HOME/.config/zellij/config.kdl}"
