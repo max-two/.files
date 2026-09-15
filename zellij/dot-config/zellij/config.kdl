@@ -5,20 +5,6 @@
 // Use Ghostty's native scrollback instead of zellij's
 scrollback_editor "none"
 
-// Never serialize/resurrect sessions. Required because `.zshrc` attaches to a
-// *named* session (`attach -c main`) — with a stable name, zellij restores the
-// serialized snapshot on the next boot instead of applying layouts/default.kdl.
-// That snapshot is unusable: zellij records each pane's live OS process, not the
-// command that launched it, so the `hx` pane comes back as whichever LSP child
-// Helix happened to be running (`marksman server`, `node typescript-language-
-// server --stdio`) — and by its libexec path, bypassing Homebrew's wrapper that
-// sets DOTNET_ROOT, so marksman dies with "You must install .NET". Every
-// resurrected pane also carries `start_suspended true`, so each one sits waiting
-// for ENTER. Tabs are recreated by worktrunk's zellij-tab-open hook anyway, so
-// there is nothing worth persisting. (Unnamed sessions masked this: a fresh
-// random name each launch had no prior snapshot to resurrect.)
-session_serialization false
-
 // Plugin aliases. The built-in aliases below are reproduced verbatim from
 // `zellij setup --dump-config`: a user `plugins` block does NOT merge with the
 // defaults, so omitting them would break tab-bar/compact-bar/session-manager/etc.

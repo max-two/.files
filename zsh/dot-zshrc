@@ -1,23 +1,4 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Zellij
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-if [[ -z "$ZELLIJ" ]]; then
-  # Named session, so simultaneous window restores (e.g. macOS reopening several
-  # Ghostty windows after a reboot) converge on one session instead of racing to
-  # each create their own unnamed one. `attach -c main` is unambiguous: attach if
-  # `main` exists, create it otherwise. An unnamed `attach` refuses to guess once
-  # more than one session is live — and exits 0 while doing so, so the check
-  # below would read that refusal as success and `exit` into a dead window.
-  if zellij --layout default attach -c main; then
-    exit
-  fi
-  # zellij failed to start (missing/bad config, version mismatch, …) — fall
-  # through to a normal interactive shell instead of running `exit`, which
-  # would close the terminal window and leave you with no usable shell.
-fi
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Prompt
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -88,6 +69,7 @@ if [[ -o interactive ]]; then
   alias zi='zed $(fzf -m --preview="bat --color=always {}")' # Fuzzy open files in zed
   alias cat='bat'
   alias brew-up='brew update && brew upgrade --cask --greedy obsidian && brew upgrade'
+  alias caff='caffeinate -di' # Hold off display + idle sleep until Ctrl-C
   alias ...='popd'
   alias claude-logs='tail -f ~/.claude/logs/session_$(cat ~/.claude/logs/.current_session).log'
   alias -g -- --help='--help 2>&1 | bat --language=help --style=plain' # Colorful help
