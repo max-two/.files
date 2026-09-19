@@ -1,0 +1,18 @@
+theme = "everforest_dark"
+
+[editor]
+line-number = "relative"
+
+[editor.file-picker]
+hidden = false
+
+[keys.normal.space]
+e = [
+  ":sh rm -f /tmp/yazi-chooser",
+  ":set mouse false",
+  ":insert-output yazi '%{buffer_name}' --chooser-file=/tmp/yazi-chooser",
+  ':sh printf "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+  ":open %sh{cat /tmp/yazi-chooser}",
+  ":set mouse true",
+  ":redraw",
+]

@@ -1,0 +1,73 @@
+% herdr
+
+# Start, or reattach to, the default session
+herdr
+
+# Detach (everything keeps running)
+Ctrl+b q
+
+# Stop the server and every pane in it
+herdr server stop
+
+# Show every active keybinding
+Ctrl+b ?
+
+# New tab
+Ctrl+b c
+
+# Split right / split down
+Ctrl+b v / Ctrl+b -
+
+# Move between panes
+Ctrl+b h / j / k / l
+
+# Zoom the focused pane
+Ctrl+b z
+
+# Close pane / close tab
+Ctrl+b x / Ctrl+b Shift+x
+
+# Next / previous tab, or jump to tab 1-9
+Ctrl+b n / Ctrl+b p / Ctrl+b 1..9
+
+# Rename tab
+Ctrl+b Shift+t
+
+# Workspace navigation
+Ctrl+b w
+
+# New workspace / rename / close
+Ctrl+b Shift+n / Ctrl+b Shift+w / Ctrl+b Shift+d
+
+# Goto picker (workspaces, tabs, agents)
+Ctrl+b g
+
+# Toggle sidebar
+Ctrl+b b
+
+# Copy mode (v select, y copy, / search, q quit)
+Ctrl+b [
+
+# Resize mode
+Ctrl+b r
+
+# New worktree for the current repo (sidebar right-click on the workspace row)
+herdr worktree create --branch <branch>
+
+# Open an existing worktree checkout as a workspace
+herdr worktree open --branch <branch>
+
+# Delete a worktree checkout (never deletes the branch)
+herdr worktree remove --workspace <workspace_id>
+
+# List agents and their states
+herdr agent list
+
+# Explain why a pane shows the state it does
+herdr agent explain <pane_id>
+
+# Reload config.toml in the running server
+herdr server reload-config
+
+# Client and server status
+herdr status

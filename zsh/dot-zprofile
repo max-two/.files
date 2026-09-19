@@ -1,6 +1,0 @@
-# Re-assert PATH order for LOGIN shells. macOS /etc/zprofile runs path_helper
-# (which reshuffles system dirs to the front) AFTER ~/.zshenv, so we re-source the
-# shared PATH file here — it runs after path_helper and re-prepends our dirs. The
-# whole Zellij session inherits this corrected PATH from the login shell. The list
-# itself lives in ~/.zsh_path.zsh (also sourced by .zshenv); this is the same file.
-source "$HOME/.zsh_path.zsh"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Battery for Herdr's tab-bar status area ([ui] tab_bar_right "command" entry in
+# ~/.config/herdr/config.toml). Herdr shows the last line of stdout as plain text
+# and strips escape codes, so this prints a Nerd Font battery glyph and the
+# percentage, nothing else. Glyphs (MDI family, same as the p10k battery segment):
+#   plugged in -> 󰂄    >= 80% -> 󰁹    21-79% -> 󰁾    <= 20% -> 󰂎
+# Prints nothing when there is no battery to report (Herdr hides an empty entry).
+set -uo pipefail
+
+command -v pmset >/dev/null 2>&1 || exit 0
+batt=$(pmset -g batt 2>/dev/null) || exit 0
+pct=$(printf '%s\n' "$batt" | grep -Eo '[0-9]+%' | head -1 | tr -d '%' || true)
+[ -n "$pct" ] || exit 0
+
+if printf '%s\n' "$batt" | grep -q "'AC Power'"; then
+  icon="󰂄"
+elif [ "$pct" -ge 80 ]; then
+  icon="󰁹"
+elif [ "$pct" -gt 20 ]; then
+  icon="󰁾"
+else
+  icon="󰂎"
+fi
+
+printf '%s %s%%\n' "$icon" "$pct"

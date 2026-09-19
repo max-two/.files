@@ -1,0 +1,42 @@
+# Global mise config (linked to ~/.config/mise/config.toml by the repo's mise.toml).
+# Tools and settings that apply everywhere. Project pins win: a repo's .nvmrc,
+# .tool-versions, .python-version, or package.json "packageManager" selects the
+# version used inside that repo (idiomatic version files below).
+
+[settings]
+idiomatic_version_file_enable_tools = ["node", "npm", "pnpm", "yarn", "python"]
+python.uv_venv_auto = "source"
+
+[tools]
+# runtimes and package managers (repo pins override these fallbacks)
+node = "lts"
+pnpm = "latest"
+yarn = "latest"
+uv = "latest"
+
+# terminal workspace manager
+herdr = "latest"
+
+# everyday CLIs
+gh = "latest"
+bat = "latest"
+eza = "latest"
+fzf = "latest"
+ripgrep = "latest"
+jq = "latest"
+zoxide = "latest"
+difftastic = "latest"
+glow = "latest"
+yazi = "latest"
+helix = "latest"
+git-lfs = "latest"
+
+# editors' language servers
+marksman = "latest"
+"npm:pyright" = "latest"
+"npm:typescript-language-server" = "latest"
+
+# review, agents, extraction
+"github:umputun/revdiff" = "latest"
+opencode = "latest"
+"npm:defuddle" = "latest"

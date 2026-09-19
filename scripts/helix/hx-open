@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Open <file> in Helix in a new Herdr tab.
+#
+# This is the $LAUNCH_EDITOR / $REACT_EDITOR handler for the "open in editor"
+# feature of dev servers (Storybook, Vite, webpack). They go through the
+# launch-editor package, which prefers a running GUI editor over $EDITOR; only
+# these two variables route here. launch-editor would then start the editor with
+# the dev server's stdio and hijack that pane, so Helix gets its own tab in the
+# dev server's Herdr workspace instead.
+#
+# launch-editor passes only a file path (no line number) for editors it does not
+# special-case, so the cursor lands at the top of the file.
+set -euo pipefail
+
+# The dev server runs inside a Herdr pane and inherits these variables. Outside
+# Herdr there is no tab to open into.
+[ "${HERDR_ENV:-}" = 1 ] && [ -n "${HERDR_WORKSPACE_ID:-}" ] || exit 0
+[ "$#" -eq 0 ] && exit 0
+
+file="$1"
+
+# launch-editor passes paths relative to the dev server's working directory
+# (e.g. ./src/Foo.stories.tsx). The new tab starts in the file's own directory,
+# so resolve against $PWD first. Absolute paths pass through unchanged.
+case "$file" in
+  /*) ;;
+  *) file="$PWD/${file#./}" ;;
+esac
+dir=$(dirname "$file")
+
+# Create the tab in this workspace, then run Helix in its root pane. Herdr's CLI
+# answers in JSON; the pane id is under .result.root_pane.pane_id.
+tab_json=$(herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$dir" --label "hx: $(basename "$file")" --focus)
+pane_id=$(printf '%s' "$tab_json" | jq -r '.result.root_pane.pane_id // empty')
+if [ -z "$pane_id" ]; then
+  printf 'hx-open: no pane id in herdr reply: %s\n' "$tab_json" >&2
+  exit 1
+fi
+
+herdr pane run "$pane_id" "hx $(printf '%q' "$file")" >/dev/null

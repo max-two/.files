@@ -1,0 +1,12 @@
+# Global git excludes — applies to every repo on this machine.
+#
+# Git reads this automatically as the XDG default ($XDG_CONFIG_HOME/git/ignore,
+# i.e. ~/.config/git/ignore) with no core.excludesfile set. Linked into place from
+# the dotfiles repo by mise.
+
+# Machine-local scratch files. *.local is Vite's convention (and rosetta's own
+# .gitignore); promoted to global so the pattern holds in every repo.
+*.local
+*.local.*
+
+**/.claude/.cc-writes/

@@ -1,0 +1,55 @@
+# Bootstrap project for this dotfiles repo. Run from the repo root:
+#
+#   mise trust && mise bootstrap            # or: ./install.sh
+#
+# The repo root mirrors ~. Each directory the repo populates is a symlink-each
+# entry (real directories at the target, one link per git-tracked file); each
+# home-level dotfile is a single symlink. Targets are deliberately narrow: a
+# symlink-each entry's first apply walks its whole target directory looking for
+# links to prune, so targeting `~` itself would crawl all of $HOME (mise
+# discussion #11548). Daily-use mise settings and tools live in
+# .config/mise/config.toml, which this links to ~/.config/mise/config.toml.
+# Relative paths resolve from this file's directory, so the repo can live
+# anywhere (a Coder box clones it wherever `coder dotfiles` decides).
+
+[dotfiles]
+"~/.config" = { source = ".config", mode = "symlink-each", manifest = "git" }
+"~/.local/share/navi/cheats" = { source = ".local/share/navi/cheats", mode = "symlink-each", manifest = "git" }
+"~/scripts" = { source = "scripts", mode = "symlink-each", manifest = "git" }
+"~/.zshenv" = ".zshenv"
+"~/.zprofile" = ".zprofile"
+"~/.zshrc" = ".zshrc"
+"~/.zsh_path.zsh" = ".zsh_path.zsh"
+"~/.p10k.zsh" = ".p10k.zsh"
+"~/.gitconfig" = ".gitconfig"
+# Linear rewrites this file when its settings change, so it is a copy, not a link.
+# The Linear desktop app is macOS-only.
+"~/.linear/coding-tools.json" = { source = ".linear/coding-tools.json", mode = "copy", variants = [{ os = "macos" }] }
+
+# zsh plugins, sourced explicitly from .zshrc. Refresh with `mise bootstrap repos update`.
+[bootstrap.repos]
+"~/.local/share/zsh/plugins/fzf-tab" = { url = "https://github.com/Aloxaf/fzf-tab.git" }
+"~/.local/share/zsh/plugins/powerlevel10k" = { url = "https://github.com/romkatv/powerlevel10k.git" }
+"~/.local/share/zsh/plugins/zsh-syntax-highlighting" = { url = "https://github.com/zsh-users/zsh-syntax-highlighting.git" }
+"~/.local/share/zsh/plugins/zsh-completions" = { url = "https://github.com/zsh-users/zsh-completions.git" }
+"~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions.git" }
+
+# GUI apps, the font, and navi. mise pours Homebrew bottles and casks itself (no
+# `brew` needed) and leaves Homebrew-owned installs alone. Casks other than fonts
+# skip on Linux. navi is a formula, not a [tools] entry, because its upstream
+# releases (and so the aqua/ubi backends) have no macOS build.
+[bootstrap.packages]
+"brew:navi" = "latest"
+"brew-cask:ghostty" = { os = "macos" }
+"brew-cask:obsidian" = { os = "macos" }
+"brew-cask:font-jetbrains-mono-nerd-font" = "latest"
+
+# Runs after tools are installed, on every bootstrap; must be idempotent.
+[tasks.bootstrap]
+description = "Generate zsh completions for mise-managed CLIs into ~/.zfunc"
+run = """
+mkdir -p "$HOME/.zfunc"
+mise completion zsh > "$HOME/.zfunc/_mise"
+herdr completion zsh > "$HOME/.zfunc/_herdr"
+gh completion -s zsh > "$HOME/.zfunc/_gh"
+"""

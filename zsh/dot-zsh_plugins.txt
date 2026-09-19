@@ -1,5 +1,0 @@
-Aloxaf/fzf-tab # Should be above autosuggestions
-romkatv/powerlevel10k
-zsh-users/zsh-syntax-highlighting
-zsh-users/zsh-completions
-zsh-users/zsh-autosuggestions # Should be near bottom

@@ -1,1 +1,12 @@
+# Claude Code's per-project state for this repo (settings.local.json, scratch writes)
+.claude/
 
+# Machine-local scratch (also excluded globally via .config/git/ignore)
+*.local
+*.local.*
+
+# mise per-machine overrides; the shared config is mise.toml + .config/mise/config.toml
+mise.local.toml
+
+# zsh completion cache, written next to the rc files when ZDOTDIR points here
+.zcompdump*

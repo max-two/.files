@@ -1,0 +1,25 @@
+onboarding = false
+# Herdr — terminal workspace manager. Defaults plus the few lines below.
+# Full default config: `herdr --default-config`. Apply edits: `herdr server reload-config`.
+
+[theme]
+# Follow the outer terminal's palette (Ghostty: Everforest Dark Hard).
+name = "terminal"
+
+[ui]
+# Right-hand status area of the tab row: battery (plain text; Herdr strips styles)
+# and a clock. Values resolve on the server, so a remote session shows its own.
+tab_bar_right = [
+  { type = "command", command = "~/scripts/battery/battery-status", interval_seconds = 60, timeout_seconds = 5 },
+  { type = "datetime", format = "%-I:%M %p" },
+]
+
+[ui.toast]
+# Agent finished / needs input: ask the outer terminal (Ghostty) to post a desktop
+# notification. Works over SSH too. Popups are suppressed for the active tab.
+delivery = "terminal"
+
+[worktrees]
+# New worktrees land at ~/code/<repo>/<branch-slug>, the existing sibling layout
+# next to each repo's .bare checkout.
+directory = "~/code"

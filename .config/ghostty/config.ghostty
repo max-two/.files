@@ -1,0 +1,7 @@
+font-family = JetBrainsMono Nerd Font
+font-size = 15
+theme = Everforest Dark Hard
+
+# Cmd+C only copies; without a Ghostty-level selection it must not fall through
+# and type a 'c' into the terminal (Herdr owns drag-selection inside its panes).
+keybind = super+c=copy_to_clipboard

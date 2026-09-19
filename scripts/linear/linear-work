@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# linear-work — handler for Linear's "Work on issue → Custom script".
+#
+# Linear runs this headlessly (bare environment, no TTY) with the issue in
+# LINEAR_* variables, wired up in ~/.linear/coding-tools.json. It creates a git
+# worktree for the issue branch, opens it as a Herdr workspace grouped under the
+# repo, and starts Claude in that workspace with the ticket as the first prompt.
+#
+# Repo selection: LINEAR_WORK_DIR must point at a checkout of the target repo.
+# Set a working directory on the issue or project in Linear; without it there is
+# nothing to create the worktree from, so the script notifies and exits.
+#
+# Requires the default Herdr session to be running (herdr, jq, and claude come
+# from the mise shims directory, since Linear provides almost no PATH).
+set -uo pipefail
+
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
+
+notify() {
+  osascript -e "display notification \"$1\" with title \"Linear → Herdr\"" >/dev/null 2>&1 || true
+  printf 'linear-work: %s\n' "$1" >&2
+}
+
+branch="${LINEAR_ISSUE_BRANCH_NAME:-}"
+ticket="${LINEAR_ISSUE_IDENTIFIER:-}"
+prompt="${LINEAR_PROMPT:-}"
+workdir="${LINEAR_WORK_DIR:-}"
+
+[ -n "$branch" ] || { notify "Linear did not pass a branch name"; exit 1; }
+if [ -z "$workdir" ] || ! git -C "$workdir" rev-parse --git-dir >/dev/null 2>&1; then
+  notify "Set a working directory on the issue in Linear (LINEAR_WORK_DIR)"
+  exit 1
+fi
+herdr status server >/dev/null 2>&1 || { notify "Herdr server is not running"; exit 1; }
+
+# Herdr's worktree actions must start from the repo's parent workspace, not from a
+# linked checkout. Derive the parent from git's common dir: ~/code/<repo>/.bare or
+# <repo>/.git both sit directly under the parent, so LINEAR_WORK_DIR may point at the
+# parent or at any checkout inside it.
+repo_root=$(dirname "$(git -C "$workdir" rev-parse --path-format=absolute --git-common-dir)")
+
+# A checkout for this branch already exists -> open it. Otherwise create one;
+# `worktree create` checks out an existing local branch or creates a new one.
+if git -C "$workdir" worktree list --porcelain | grep -qx "branch refs/heads/$branch"; then
+  result=$(herdr worktree open --cwd "$repo_root" --branch "$branch" --label "$ticket" --focus) \
+    || { notify "herdr worktree open failed for $branch"; exit 1; }
+  # Re-opening an already-open workspace: Claude is presumably running there.
+  if [ "$(printf '%s' "$result" | jq -r '.result.already_open // false')" = true ]; then
+    exit 0
+  fi
+else
+  result=$(herdr worktree create --cwd "$repo_root" --branch "$branch" --label "$ticket" --focus) \
+    || { notify "herdr worktree create failed for $branch"; exit 1; }
+fi
+
+workspace_id=$(printf '%s' "$result" | jq -r '.result.workspace.workspace_id // empty')
+if [ -z "$workspace_id" ]; then
+  notify "Could not read the workspace id from herdr"
+  printf '%s\n' "$result" >&2
+  exit 1
+fi
+
+# The new workspace's root pane. Prefer the id in the reply; fall back to the
+# first pane listed for the workspace.
+pane_id=$(printf '%s' "$result" | jq -r '.result.root_pane.pane_id // empty')
+if [ -z "$pane_id" ]; then
+  pane_id=$(herdr pane list --workspace "$workspace_id" | jq -r '[.result.panes[]?.pane_id][0] // empty')
+fi
+if [ -z "$pane_id" ]; then
+  notify "Worktree opened, but no pane found to start Claude in"
+  exit 1
+fi
+
+# Agent names must match [a-z][a-z0-9_-]{0,31} and be unique among live agents.
+name=$(printf '%s' "${ticket:-issue}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_-' '-' | cut -c1-32)
+case "$name" in
+  [a-z]*) ;;
+  *) name="t-${name}" ;;
+esac
+
+# `agent start` returns once Claude is at its prompt; the ticket rides in as
+# Claude's initial prompt.
+if [ -n "$prompt" ]; then
+  herdr agent start "$name" --kind claude --pane "$pane_id" -- "$prompt" >/dev/null \
+    || { notify "Worktree ready, but Claude did not start"; exit 1; }
+else
+  herdr agent start "$name" --kind claude --pane "$pane_id" >/dev/null \
+    || { notify "Worktree ready, but Claude did not start"; exit 1; }
+fi
