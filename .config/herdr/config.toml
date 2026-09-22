@@ -77,6 +77,7 @@ directory = "~/code"
 
 # Worktrees. remove_worktree asks for confirmation, runs `git worktree remove`, and
 # closes the worktree's workspace in the same step. It never deletes the branch.
+# Ctrl+Shift+d (a [[keys.command]] popup below) does the same for several at once.
 new_worktree = ["prefix+shift+g", "ctrl+w"]
 remove_worktree = "ctrl+d"
 
@@ -119,3 +120,15 @@ key = "ctrl+shift+s"
 type = "shell"
 description = "fzf file search (types ESC [115;6u into the focused pane)"
 command = "\"${HERDR_BIN_PATH:-herdr}\" pane send-text \"$HERDR_ACTIVE_PANE_ID\" \"$(printf '\\033[115;6u')\""
+
+# Ctrl+Shift+D: multi-select worktree removal across ~/code. A popup is a
+# session-modal terminal over the current tab that closes when its command
+# exits. Popups run through a non-login /bin/sh -c from the focused pane's
+# directory, so the script sets its own PATH. Sizes include the border.
+[[keys.command]]
+key = "ctrl+shift+d"
+type = "popup"
+description = "remove worktrees (multi-select picker)"
+command = "~/scripts/herdr/worktree-remove"
+width = "90%"
+height = "80%"

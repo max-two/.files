@@ -72,6 +72,10 @@ Ctrl+w  (or Ctrl+b Shift+g)
 # Delete the worktree checkout and close its workspace (confirms first; never deletes the branch)
 Ctrl+d
 
+# Pick several worktrees to remove, across every repo in ~/code (fzf popup; tab selects,
+# ctrl-a all/none, enter removes; asks before forcing a dirty checkout; never deletes branches)
+Ctrl+Shift+d
+
 # In a zsh pane: fzf history search / fzf file search (Herdr bridges Ctrl+Shift+S)
 Ctrl+s / Ctrl+Shift+s
 

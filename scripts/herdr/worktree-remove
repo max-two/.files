@@ -1,0 +1,434 @@
+#!/usr/bin/env bash
+# worktree-remove — pick git worktrees across ~/code and remove them.
+#
+# Bound to a Herdr popup (Ctrl+Shift+d in .config/herdr/config.toml) but works
+# from any terminal. Lists the linked worktrees of every repo directly under
+# ~/code: the sibling checkouts of a bare-repo layout (~/code/<repo>/.bare) and
+# the extra worktrees of a regular repo. Two checkouts are never offered: a
+# regular repo's main worktree (git cannot remove it) and, in a bare layout, the
+# checkout of the default branch (the bare repo's HEAD, e.g. ~/code/mono/master).
+#
+# fzf shows the rest with multi-select. Enter removes the selection at once. A
+# checkout with modified or untracked files prompts, per worktree, before it is
+# discarded. Branches are never deleted.
+#
+# Deleting the files is the slow part: a mono checkout is ~200k files and takes
+# about 20 s to rm, which is what `git worktree remove` spends its time on. So
+# each checkout is renamed to <repo>/.wt-removing.<name>.<pid> (instant on the
+# same volume), git drops the now-missing worktree, the Herdr workspace is
+# closed if one is open, and a detached rm deletes the renamed directory in the
+# background. Leftovers from an interrupted run are swept on the next start.
+#
+# Only bash 3.2 is guaranteed (macOS /bin/bash), so the lookup tables live in a
+# temp TSV instead of associative arrays. Herdr runs popup commands through a
+# non-login /bin/sh -c from the focused pane's directory, so PATH is set here.
+#
+# Internal: `worktree-remove --preview <path>` renders fzf's preview pane.
+set -uo pipefail
+
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
+
+code_root="${WORKTREE_REMOVE_ROOT:-$HOME/code}"
+herdr_bin="${HERDR_BIN_PATH:-herdr}"
+
+# Everforest, the same values as the Herdr theme in config.toml.
+c_reset=$'\033[0m'
+c_dim=$'\033[38;2;122;132;120m'     # grey0
+c_muted=$'\033[38;2;133;146;137m'   # grey1
+c_branch=$'\033[38;2;214;153;182m'  # purple, like the sidebar branch name
+c_open=$'\033[38;2;219;188;127m'    # yellow
+c_gone=$'\033[38;2;230;126;128m'    # red
+c_here=$'\033[38;2;167;192;128m'    # green
+c_bold=$'\033[1m'
+
+# ---------------------------------------------------------------------------
+# Row table. One line per candidate worktree, tab-separated:
+#   1 repo  2 repo_dir  3 path  4 branch  5 sha  6 age_ts  7 age  8 flags  9 workspace_id
+# `branch` is "(detached)" for a detached HEAD. `flags` is a comma list drawn
+# from open (Herdr workspace open), gone (checkout directory missing), here
+# (the worktree this popup was launched from). Fields 6 to 9 may be empty.
+# ---------------------------------------------------------------------------
+
+# Open Herdr workspaces as "workspace_id<TAB>checkout_path" lines. Empty when
+# no server is reachable, in which case every worktree is treated as closed.
+list_open_workspaces() {
+  "$herdr_bin" workspace list 2>/dev/null \
+    | jq -r '.result.workspaces[]? | select(.worktree != null) | [.workspace_id, .worktree.checkout_path] | @tsv' 2>/dev/null
+}
+
+# The worktree this run started in: the cwd's toplevel if inside a checkout,
+# otherwise the checkout of the workspace the popup (or pane) belongs to.
+current_worktree() {
+  local top id
+  top=$(git rev-parse --show-toplevel 2>/dev/null) && { printf '%s\n' "$top"; return; }
+  id="${HERDR_ACTIVE_WORKSPACE_ID:-${HERDR_WORKSPACE_ID:-}}"
+  [ -n "$id" ] || return 0
+  awk -F'\t' -v id="$id" '$1 == id { print $2; exit }' "$open_ws_file"
+}
+
+# Emit the raw rows (fields 1 to 5, plus a flags field) for one repo directory.
+scan_repo() {
+  local repo_dir="$1" repo default_branch=""
+  local path="" sha="" branch="" prunable=0 is_bare=0 in_entry=0
+  repo=$(basename "$repo_dir")
+
+  if [ -d "$repo_dir/.bare" ]; then
+    default_branch=$(git -C "$repo_dir" symbolic-ref --short HEAD 2>/dev/null || true)
+  fi
+
+  flush() {
+    [ "$in_entry" = 1 ] || return 0
+    [ "$is_bare" = 1 ] && return 0
+    [ "$path" = "$repo_dir" ] && return 0                              # main worktree of a regular repo
+    [ -n "$default_branch" ] && [ "$branch" = "$default_branch" ] && return 0
+    local flags=""
+    [ "$prunable" = 1 ] && flags="gone"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$repo" "$repo_dir" "$path" "${branch:-(detached)}" "$sha" "$flags"
+  }
+
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*)
+        flush
+        path="${line#worktree }"; sha=""; branch=""; prunable=0; is_bare=0; in_entry=1 ;;
+      "HEAD "*)     sha="${line#HEAD }" ;;
+      "branch "*)   branch="${line#branch refs/heads/}" ;;
+      bare)         is_bare=1 ;;
+      "prunable "*) prunable=1 ;;
+    esac
+  done < <(git -C "$repo_dir" worktree list --porcelain 2>/dev/null)
+  flush
+}
+
+# Fill in commit age for every row of one repo with a single git call: the rows
+# arrive on stdin as scan_repo emitted them and leave with fields 6 and 7 set.
+# The lookup goes through a file: BSD awk refuses a newline inside a -v value.
+add_ages() {
+  local repo_dir="$1" rows shas ages_file="$tmp/ages.tsv"
+  rows=$(cat)
+  [ -n "$rows" ] || return 0
+  shas=$(printf '%s\n' "$rows" | cut -f5 | grep -v '^0*$' | sort -u)
+  : > "$ages_file"
+  if [ -n "$shas" ]; then
+    # shellcheck disable=SC2086
+    git -C "$repo_dir" log --ignore-missing --no-walk=unsorted --format='%H%x09%ct%x09%cr' $shas > "$ages_file" 2>/dev/null || true
+  fi
+  printf '%s\n' "$rows" | awk -F'\t' -v OFS='\t' -v agesfile="$ages_file" '
+    BEGIN {
+      while ((getline line < agesfile) > 0) { split(line, f, "\t"); ts[f[1]] = f[2]; rel[f[1]] = f[3] }
+      close(agesfile)
+    }
+    { print $1, $2, $3, $4, $5, ($5 in ts ? ts[$5] : 0), ($5 in rel ? rel[$5] : "no commits"), $6 }'
+}
+
+# Join the open-workspace and "here" markers onto the rows: fields 8 and 9. The
+# workspace file is read in BEGIN because it is often empty, and awk's usual
+# NR == FNR trick misfires on an empty first file.
+add_markers() {
+  awk -F'\t' -v OFS='\t' -v here="$1" -v wsfile="$open_ws_file" '
+    BEGIN {
+      while ((getline line < wsfile) > 0) { split(line, f, "\t"); ws[f[2]] = f[1] }
+      close(wsfile)
+    }
+    {
+      flags = $8; id = ""
+      if ($3 in ws) { id = ws[$3]; flags = (flags == "" ? "open" : flags ",open") }
+      if ($3 == here) { flags = (flags == "" ? "here" : flags ",here") }
+      print $1, $2, $3, $4, $5, $6, $7, flags, id
+    }'
+}
+
+# Rows come out newest commit first across all repos, with the worktree this run
+# was launched from moved to the top so fzf's cursor starts on it.
+#
+# Repo directories are canonicalised (pwd -P) because git prints worktree paths
+# with symlinks resolved, and the rows are matched against those paths.
+build_rows() {
+  local dir
+  for dir in "$code_root"/*/; do
+    dir=$(cd "$dir" 2>/dev/null && pwd -P) || continue
+    [ -d "$dir/.bare" ] || [ -d "$dir/.git" ] || [ -f "$dir/.git" ] || continue
+    scan_repo "$dir" | add_ages "$dir"
+  done \
+    | add_markers "$(current_worktree)" \
+    | sort -t "$(printf '\t')" -k6,6nr \
+    | awk -F'\t' '$8 ~ /(^|,)here(,|$)/ { print; next } { rest = rest $0 "\n" } END { printf "%s", rest }'
+}
+
+# ---------------------------------------------------------------------------
+# Presentation.
+# ---------------------------------------------------------------------------
+
+# Shorten to at most $2 columns. ASCII marker on purpose: bash 3.2's printf pads
+# by bytes, so a multibyte ellipsis would throw the columns off.
+clip() {
+  local s="$1" max="$2"
+  if [ "${#s}" -gt "$max" ]; then
+    printf '%s~' "${s:0:$((max - 1))}"
+  else
+    printf '%s' "$s"
+  fi
+}
+
+flag_text() {
+  local out="" f
+  local IFS=','
+  for f in $1; do
+    case "$f" in
+      open) out="$out ${c_open}open${c_reset}" ;;
+      gone) out="$out ${c_gone}gone${c_reset}" ;;
+      here) out="$out ${c_here}here${c_reset}" ;;
+    esac
+  done
+  printf '%s' "$out"
+}
+
+# Render the fzf lines: "<coloured display><TAB><path>". Column widths follow
+# the longest values present, clipped so long branch names cannot push the age
+# and flag columns off screen.
+render_lines() {
+  local w_repo=0 w_dir=0 w_branch=0 repo repo_dir path branch sha ts age flags ws dir
+  while IFS=$'\t' read -r repo repo_dir path branch sha ts age flags ws; do
+    dir=$(basename "$path")
+    [ "${#repo}" -gt "$w_repo" ] && w_repo=${#repo}
+    [ "${#dir}" -gt "$w_dir" ] && w_dir=${#dir}
+    [ "${#branch}" -gt "$w_branch" ] && w_branch=${#branch}
+  done < "$rows_file"
+  # Fit the row into fzf's list column: the terminal width minus the 40%
+  # preview and its border, minus fzf's 3-column gutter, the fixed columns
+  # (repo, separators, a 14-wide age) and the widest state text (" open here").
+  # Directory and branch share what is left, neither padded past its content.
+  local cols list_w budget d b
+  cols=$(stty size </dev/tty 2>/dev/null | cut -d' ' -f2)
+  cols="${cols:-${COLUMNS:-120}}"
+  list_w=$((cols * 60 / 100 - 1))
+  budget=$((list_w - 3 - w_repo - 6 - 14 - 10))
+  [ "$budget" -lt 24 ] && budget=24
+  if [ $((w_dir + w_branch)) -gt "$budget" ]; then
+    d=$((budget * 45 / 100)); b=$((budget - d))
+    if [ "$w_dir" -lt "$d" ]; then d=$w_dir; b=$((budget - d)); fi
+    if [ "$w_branch" -lt "$b" ]; then b=$w_branch; d=$((budget - b)); fi
+    w_dir=$d; w_branch=$b
+  fi
+
+  # Column titles, consumed by fzf as --header-lines=1 so they sit above the
+  # rows with the same widths. fzf colours them with its header colour.
+  printf '%-*s  %-*s  %-*s  %-14s state\t\n' \
+    "$w_repo" "repo" "$w_dir" "directory" "$w_branch" "branch" "last commit"
+
+  while IFS=$'\t' read -r repo repo_dir path branch sha ts age flags ws; do
+    dir=$(clip "$(basename "$path")" "$w_dir")
+    branch=$(clip "$branch" "$w_branch")
+    printf '%-*s  %s%-*s%s  %s%-*s%s  %s%-14s%s%s\t%s\n' \
+      "$w_repo" "$repo" \
+      "$c_dim" "$w_dir" "$dir" "$c_reset" \
+      "$c_branch" "$w_branch" "$branch" "$c_reset" \
+      "$c_muted" "$age" "$c_reset" \
+      "$(flag_text "$flags")" \
+      "$path"
+  done < "$rows_file"
+}
+
+# fzf preview for one worktree: identity, Herdr state, last commit, dirty files.
+preview() {
+  local path="$1" repo repo_dir branch sha ts age flags ws
+  IFS=$'\t' read -r repo repo_dir _ branch sha ts age flags ws < <(awk -F'\t' -v p="$path" '$3 == p' "$rows_file")
+  [ -n "${repo:-}" ] || { printf 'not a listed worktree: %s\n' "$path"; return; }
+
+  printf '%s%s%s  %s%s%s\n' "$c_bold" "$repo" "$c_reset" "$c_branch" "$branch" "$c_reset"
+  printf '%s%s%s\n\n' "$c_dim" "$path" "$c_reset"
+
+  case ",$flags," in
+    *,gone,*) printf '%scheckout directory is missing; removing prunes the stale entry%s\n' "$c_gone" "$c_reset" ;;
+  esac
+  [ -n "$ws" ] && printf '%sopen in Herdr as workspace %s; removing closes it%s\n' "$c_open" "$ws" "$c_reset"
+  case ",$flags," in
+    *,here,*) printf '%sthis popup was launched from here%s\n' "$c_here" "$c_reset" ;;
+  esac
+  case ",$flags," in *,gone,*|*,open,*|*,here,*) printf '\n' ;; esac
+
+  if [ -n "$sha" ] && [ "$ts" != 0 ]; then
+    printf '%slast commit%s  %s\n' "$c_bold" "$c_reset" "$(git -C "$repo_dir" log -1 --format='%h  %s%n             %an, %cr' "$sha" 2>/dev/null)"
+  fi
+
+  if [ "$branch" != "(detached)" ]; then
+    # for-each-ref prints an empty upstream when none is configured, where
+    # rev-parse would echo the literal "@{upstream}" query back. `track` is
+    # "[ahead 1, behind 2]", "[gone]" once the remote branch was deleted (a
+    # merged PR, usually), or empty when in sync.
+    local upstream track
+    IFS=$'\t' read -r upstream track < <(git -C "$repo_dir" for-each-ref --format='%(upstream:short)%09%(upstream:track)' "refs/heads/$branch" 2>/dev/null)
+    if [ -n "${upstream:-}" ]; then
+      case "$track" in
+        '')       track="${c_here}in sync${c_reset}" ;;
+        '[gone]') track="${c_open}remote branch deleted${c_reset}" ;;
+        *)        track="${c_muted}${track}${c_reset}" ;;
+      esac
+      printf '%supstream%s     %s  %s\n' "$c_bold" "$c_reset" "$upstream" "$track"
+    else
+      printf '%supstream%s     none: the branch was never pushed\n' "$c_bold" "$c_reset"
+    fi
+  fi
+
+  case ",$flags," in *,gone,*) return ;; esac
+  printf '\n%sworking tree%s\n' "$c_bold" "$c_reset"
+  local status
+  status=$(git -C "$path" status --short 2>/dev/null)
+  if [ -z "$status" ]; then
+    printf '%sclean%s\n' "$c_here" "$c_reset"
+  else
+    printf '%s\n' "$status" | head -25
+    local n; n=$(printf '%s\n' "$status" | wc -l | tr -d ' ')
+    [ "$n" -gt 25 ] && printf '%s~ %s more%s\n' "$c_dim" "$((n - 25))" "$c_reset"
+    printf '\n%sremoval asks before discarding these%s\n' "$c_open" "$c_reset"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Removal.
+# ---------------------------------------------------------------------------
+
+ask_force() {
+  local key
+  printf '\n  %s[f]%s force-remove   %sany other key%s skip  ' "$c_gone" "$c_reset" "$c_dim" "$c_reset"
+  read -rn 1 key </dev/tty
+  printf '\n'
+  [ "$key" = f ] || [ "$key" = F ]
+}
+
+# Delete a renamed checkout without waiting for it. nohup survives the hangup
+# the popup sends on close; anything else that interrupts it is swept next run.
+delete_in_background() {
+  nohup rm -rf "$1" >/dev/null 2>&1 &
+}
+
+# Finish deletions an earlier run left behind.
+sweep_leftovers() {
+  local d
+  for d in "$code_root"/*/.wt-removing.*; do
+    [ -d "$d" ] && delete_in_background "$d"
+  done
+}
+
+# Remove one worktree. Returns 0 when it is gone, 1 when it was left in place.
+remove_one() {
+  local path="$1" repo repo_dir branch ws status n trash="" err
+  IFS=$'\t' read -r repo repo_dir _ branch _ _ _ _ ws < <(awk -F'\t' -v p="$path" '$3 == p' "$rows_file")
+
+  printf '%s%s%s  %s%s%s\n' "$c_bold" "$repo" "$c_reset" "$c_branch" "$branch" "$c_reset"
+  printf '%s%s%s\n' "$c_dim" "$path" "$c_reset"
+
+  if [ -d "$path" ]; then
+    # The same check git would make before removing; git will not see the
+    # files once the directory has been renamed, so it happens here.
+    status=$(git -C "$path" status --porcelain --ignore-submodules=none 2>/dev/null)
+    if [ -n "$status" ]; then
+      printf '%s\n' "$status" | head -10
+      n=$(printf '%s\n' "$status" | wc -l | tr -d ' ')
+      [ "$n" -gt 10 ] && printf '%s~ %s more%s\n' "$c_dim" "$((n - 10))" "$c_reset"
+      printf '%smodified or untracked files would be lost%s' "$c_open" "$c_reset"
+      ask_force || return 1
+    fi
+    trash="$repo_dir/.wt-removing.$(basename "$path").$$"
+    if ! err=$(mv "$path" "$trash" 2>&1); then
+      printf '%s\n' "$err"
+      return 1
+    fi
+  fi
+
+  # With the directory gone git treats the entry as prunable and drops it
+  # without further checks. If it refuses anyway (a locked worktree, say), put
+  # the directory back so nothing is half done.
+  if ! err=$(git -C "$repo_dir" worktree remove "$path" 2>&1); then
+    printf '%s\n' "$err"
+    [ -n "$trash" ] && mv "$trash" "$path"
+    return 1
+  fi
+
+  if [ -n "$ws" ]; then
+    "$herdr_bin" workspace close "$ws" >/dev/null 2>&1 \
+      || printf '%sworktree removed, but Herdr workspace %s did not close%s\n' "$c_open" "$ws" "$c_reset"
+  fi
+
+  if [ -n "$trash" ]; then
+    delete_in_background "$trash"
+    pending=$((pending + 1))
+  fi
+
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Main.
+# ---------------------------------------------------------------------------
+
+if [ "${1:-}" = "--preview" ]; then
+  # fzf calls back into this script; the table it should read is passed down.
+  rows_file="${WORKTREE_REMOVE_ROWS:?}"
+  preview "${2:?path}"
+  exit 0
+fi
+
+for tool in fzf jq git; do
+  command -v "$tool" >/dev/null 2>&1 || { printf 'worktree-remove: %s not found on PATH\n' "$tool" >&2; exit 1; }
+done
+
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/worktree-remove.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+rows_file="$tmp/rows.tsv"
+open_ws_file="$tmp/open.tsv"
+shopt -s nullglob dotglob
+
+sweep_leftovers
+list_open_workspaces > "$open_ws_file"
+build_rows > "$rows_file"
+
+if [ ! -s "$rows_file" ]; then
+  printf 'No removable worktrees under %s.\n' "$code_root"
+  exit 0
+fi
+
+# Ctrl+j/k, Ctrl+d and Ctrl+x are Herdr chords and may never reach the popup,
+# so the list is driven with arrows or Ctrl+n/p, and Ctrl+a for all / none.
+selection=$(render_lines | WORKTREE_REMOVE_ROWS="$rows_file" fzf \
+  --ansi --multi --layout=reverse \
+  --delimiter=$'\t' --with-nth=1 --accept-nth=2 \
+  --prompt="remove ❯ " --pointer='▌' --marker='✓ ' \
+  --header="tab select · ctrl-a all/none · enter remove · esc cancel" \
+  --header-first --header-lines=1 --header-lines-border=bottom \
+  --info=inline-right --border=none \
+  --preview="$0 --preview {2}" \
+  --preview-window='right,40%,border-left,wrap' \
+  --bind 'ctrl-a:toggle-all' \
+  --color='bg:-1,bg+:#374145,fg:#d3c6aa,fg+:#d3c6aa,hl:#a7c080,hl+:#a7c080,info:#7a8478,prompt:#a7c080,pointer:#e67e80,marker:#dbbc7f,header:#859289,border:#495156,preview-bg:-1,gutter:-1,spinner:#83c092')
+
+[ -n "$selection" ] || exit 0
+
+removed=0 kept=0 pending=0
+while IFS= read -r path; do
+  [ -n "$path" ] || continue
+  if remove_one "$path"; then
+    printf '%sremoved%s\n\n' "$c_here" "$c_reset"
+    removed=$((removed + 1))
+  else
+    printf '%sleft in place%s\n\n' "$c_open" "$c_reset"
+    kept=$((kept + 1))
+  fi
+done <<< "$selection"
+
+printf '%s%d removed%s' "$c_bold" "$removed" "$c_reset"
+[ "$kept" -gt 0 ] && printf ', %s%d left in place%s' "$c_open" "$kept" "$c_reset"
+if [ "$pending" -eq 1 ]; then
+  printf '%s; its files are being deleted in the background%s' "$c_dim" "$c_reset"
+elif [ "$pending" -gt 1 ]; then
+  printf '%s; their files are being deleted in the background%s' "$c_dim" "$c_reset"
+fi
+printf '\n'
+
+# The popup closes as soon as this exits; hold it open only when there is
+# something to read.
+if [ "$kept" -gt 0 ]; then
+  printf '%spress any key to close%s' "$c_dim" "$c_reset"
+  read -rn 1 </dev/tty
+  printf '\n'
+fi

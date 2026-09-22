@@ -64,7 +64,10 @@ sections, everything else under "Tool docs and help".
   `claude/statusline.sh` (Claude Code status line; wired by the machine-local
   `~/.claude/settings.json`), `helix/hx-open` (dev servers' "open in editor" → Helix in a new Herdr
   tab; `.zshrc` exports it as `LAUNCH_EDITOR`), `linear/linear-work` (Linear "Work on issue" →
-  Herdr worktree workspace with Claude started on the ticket), `yazi/*`.
+  Herdr worktree workspace with Claude started on the ticket), `herdr/worktree-remove` (fzf
+  multi-select removal of worktrees across `~/code`, opened as a Herdr popup by Ctrl+Shift+d;
+  renames each checkout aside and deletes it in the background because a mono checkout takes
+  ~20 s to rm; never deletes branches), `yazi/*`.
 
 ## Things to know
 
@@ -78,8 +81,10 @@ sections, everything else under "Tool docs and help".
   fork) so scripts and agent shells see tools; `.zshrc` runs `mise activate zsh`, which swaps shims
   for real tool paths at every prompt. `.zprofile` re-sources the PATH file because macOS
   `/etc/zprofile` runs `path_helper` after `.zshenv` and reorders PATH; Herdr starts login shells,
-  so every pane passes through it. Herdr's own custom-command keybinds run via `/bin/sh -lc`,
-  which reads `~/.profile`, not the zsh files.
+  so every pane passes through it. Herdr's own custom-command keybinds never see the zsh files:
+  `type = "shell"` runs via `/bin/sh -lc` (reads `~/.profile`), `pane` and `popup` via a
+  non-login `/bin/sh -c` from the focused pane's directory, so scripts they launch set PATH
+  themselves.
 - **Aliases and zoxide are interactive-only.** Claude Code's Bash tool sources a non-interactive
   snapshot of `.zshrc`; unguarded aliases (`ls` → `eza`) break tools there, and zoxide's `cd` would
   record every agent directory change.
