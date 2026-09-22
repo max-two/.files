@@ -3,8 +3,39 @@ onboarding = false
 # Full default config: `herdr --default-config`. Apply edits: `herdr server reload-config`.
 
 [theme]
-# Follow the outer terminal's palette (Ghostty: Everforest Dark Hard).
-name = "terminal"
+# Everforest Dark Hard, the same palette as Ghostty. Herdr has no theme files: a theme is a
+# built-in base plus `[theme.custom]` overrides. Every one of Herdr's tokens is set below, so
+# the base only supplies defaults for tokens a future Herdr might add.
+#
+# Not `terminal`. That theme is a fixed table of ANSI colour names, not a copy of the host
+# palette: it paints the active sidebar row, tab pills and separators in bright black (slot 8)
+# and muted text in slots 7 and 15. Everforest maps those slots to light sage and cream, so
+# the highlights came out lighter than the text on them.
+name = "catppuccin"
+
+[theme.custom]
+# Surfaces, one Everforest bg step per role. The terminal background is bg_dim.
+panel_bg = "#1e2326"       # bg_dim: tab row, mode bar, popups; also the text on accent fills
+sidebar_bg = "reset"       # the sidebar keeps the terminal background
+surface0 = "#2e383c"       # bg1: inactive tab pills, text inputs, cancel buttons
+active_row_bg = "#374145"  # bg2: focused space row, focused agent row
+surface1 = "#414b50"       # bg3: dragged row, divider rules
+surface_dim = "#495156"    # bg4: sidebar and header separators, scrollbar tracks
+selection_bg = "#4c3743"   # bg_visual: navigate-mode cursor row (Ghostty's selection colour)
+# Text, darkest to lightest. Herdr assumes overlay0 < overlay1 < subtext0 < text.
+overlay0 = "#7a8478"       # grey0: inactive tab labels, headers, unfocused pane borders
+overlay1 = "#859289"       # grey1: clock and battery, popup body text
+subtext0 = "#9da9a0"       # grey2: unfocused space and agent labels
+text = "#d3c6aa"           # fg: focused labels, popup titles
+# Accents.
+accent = "#a7c080"         # green: active tab, focused pane border, selected rows, buttons
+mauve = "#d699b6"          # purple: branch name on the focused space row
+green = "#a7c080"          # idle agent
+yellow = "#dbbc7f"         # working agent
+red = "#e67e80"            # blocked agent, destructive buttons
+teal = "#83c092"           # aqua: done agent
+blue = "#7fbbb3"           # finished toast
+peach = "#e69875"          # orange: unused by Herdr 0.9.1
 
 [ui]
 # Right-hand status area of the tab row: battery (plain text; Herdr strips styles)
