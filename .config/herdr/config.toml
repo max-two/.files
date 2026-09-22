@@ -81,9 +81,15 @@ directory = "~/code"
 new_worktree = ["prefix+shift+g", "ctrl+w"]
 remove_worktree = "ctrl+d"
 
-# Workspaces, in sidebar order: k moves up, j moves down.
-previous_workspace = "ctrl+k"
-next_workspace = "ctrl+j"
+# Agents, in agent-panel order (grouped by workspace; `ui.agent_panel_sort`): k moves up,
+# j moves down. Each press focuses the previous/next agent shown in the panel.
+previous_agent = "ctrl+k"
+next_agent = "ctrl+j"
+
+# Workspaces, in sidebar order: k moves up, j moves down. Ctrl+Shift+<letter> reaches Herdr
+# as a chord distinct from Ctrl+<letter> for the same reason Ctrl+Shift+S does below.
+previous_workspace = "ctrl+shift+k"
+next_workspace = "ctrl+shift+j"
 
 # Tabs.
 new_tab = ["prefix+c", "ctrl+t"]

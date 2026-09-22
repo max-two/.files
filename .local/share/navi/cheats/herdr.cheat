@@ -51,8 +51,11 @@ Ctrl+b r
 # Copy mode (v select, y copy, / search, q quit)
 Ctrl+b [
 
-# Workspace up / down the sidebar
+# Previous / next agent in the agent panel
 Ctrl+k / Ctrl+j
+
+# Workspace up / down the sidebar
+Ctrl+Shift+k / Ctrl+Shift+j
 
 # Workspace navigation
 Ctrl+b w
