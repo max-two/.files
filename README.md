@@ -88,4 +88,47 @@ every option with its default; `herdr server reload-config` applies edits to the
 - Logs: `~/.config/herdr/herdr-server.log` and `herdr-client.log`.
 - Docs: https://herdr.dev/docs/. For an agent helping with Herdr: https://herdr.dev/agent-guide.md.
 
+## Tool docs and help
+
+mise and Herdr have their own sections above. For everything else, the official docs and the
+commands that print help or state on this machine:
+
+- **Ghostty**: https://ghostty.org/docs, config reference at
+  https://ghostty.org/docs/config/reference. The same reference ships in the app as
+  `/Applications/Ghostty.app/Contents/Resources/ghostty/doc/ghostty.5.md`.
+  `ghostty +show-config --default --docs` prints every option with its default and its docs;
+  `ghostty +list-keybinds`, `+list-themes`, and `+validate-config` do what they say; `ghostty +help`
+  lists every action.
+- **Helix**: https://docs.helix-editor.com/ (`keymap.html`, `configuration.html`, `commands.html`).
+  `hx --health [language]` prints the config, log, and runtime paths and each language's LSP,
+  formatter, and grammar status. `hx --tutor` (or `:tutor` inside Helix) opens the tutorial. There
+  is no `:help` command; the keymap page is the reference.
+- **yazi**: https://yazi-rs.github.io/docs/quick-start and
+  https://yazi-rs.github.io/docs/configuration/overview (the bare `/docs/` URL is a 404). `ya env`
+  prints versions, each config file's path and whether it exists, and the terminal probe; `ya pkg`
+  manages plugins. Inside yazi, `F1` or `~` opens the help menu. `yazi --help` and `ya env` need a
+  TTY, so they fail from an agent shell.
+- **navi**: https://github.com/denisidoro/navi/tree/master/docs (cheat syntax under
+  `cheatsheet/syntax/`, config under `configuration/`). `navi info config-example` prints an
+  annotated example config, `navi info cheats-example` a sample cheat, and `navi info config-path`
+  and `navi info cheats-path` the locations it reads. `navi fn welcome` opens navi's own cheatsheet.
+- **revdiff**: README at https://github.com/umputun/revdiff (Config File, Themes, Key Bindings
+  sections) and https://revdiff.com/docs.html. `revdiff --dump-config` prints the default config
+  with every option commented, `--dump-keys` the effective keybindings, `--list-themes` the bundled
+  themes. Inside revdiff, `?` toggles the help overlay and `T` picks a theme.
+- **difftastic**: https://difftastic.wilfred.me.uk/ (git setup: `git.html`). `difft --help` lists
+  the options with their `DFT_*` environment variables; `difft --list-languages` the languages and
+  their globs.
+- **OpenCode**: https://opencode.ai/docs/ and https://opencode.ai/docs/config/; the config schema is
+  https://opencode.ai/config.json. `opencode debug config` prints the resolved configuration and
+  `opencode debug paths` the directories it uses.
+- **Powerlevel10k**: `p10k help` lists `configure`, `reload`, `segment`, and `display`;
+  `p10k help <command>` explains each. README (Configuration, FAQ):
+  https://github.com/romkatv/powerlevel10k, also in the clone.
+- **zsh plugins**: each clone under `~/.local/share/zsh/plugins/<name>/` carries its README, which
+  is the documentation. Upstream: https://github.com/Aloxaf/fzf-tab,
+  https://github.com/zsh-users/zsh-autosuggestions,
+  https://github.com/zsh-users/zsh-syntax-highlighting, and
+  https://github.com/zsh-users/zsh-completions.
+
 See `CLAUDE.md` for how the pieces fit together and the things that are easy to get wrong.
