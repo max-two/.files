@@ -115,7 +115,9 @@ edit_scrollback = ["prefix+e", "alt+e"]
 # Session.
 detach = ["prefix+q", "ctrl+q"]
 reload_config = ["prefix+shift+r", "ctrl+r"]
-open_notification_target = ["prefix+o", "ctrl+u"]
+# Only useful with `[ui.toast] delivery = "herdr"` (in-app toasts); it jumps to the pane
+# behind the visible toast. Kept on the prefix chord only so Ctrl+U reaches the pane.
+open_notification_target = "prefix+o"
 
 # Ctrl+Shift+S: fzf file search in the focused pane. Terminals encode Ctrl+Shift+S
 # and Ctrl+S as the same byte (0x13), so zsh cannot tell them apart. Herdr can, so
