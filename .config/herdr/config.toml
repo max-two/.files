@@ -38,12 +38,27 @@ blue = "#7fbbb3"           # finished toast
 peach = "#e69875"          # orange: unused by Herdr 0.9.1
 
 [ui]
+# Tab row at the bottom. Always shown: hiding it for a single tab also hides the
+# battery and clock. New tabs get a generated name instead of a prompt (rename later
+# with prefix+shift+t).
+tab_bar_position = "bottom"
+prompt_new_tab_name = false
+
 # Right-hand status area of the tab row: battery (plain text; Herdr strips styles)
 # and a clock. Values resolve on the server, so a remote session shows its own.
+# The status block is drawn flush to the right edge, so the trailing text entry is
+# padding: with the separator before it, two columns. Datetime output is trimmed,
+# so a trailing space in the clock format would not work.
 tab_bar_right = [
   { type = "command", command = "~/scripts/battery/battery-status", interval_seconds = 60, timeout_seconds = 5 },
   { type = "datetime", format = "%-I:%M %p" },
+  { type = "text", text = " " },
 ]
+
+[ui.sidebar.agents]
+# One row per agent: state dot, machine, space, tab. The default second row that
+# names the agent program ("claude") is dropped.
+rows = [["state_icon", "machine", "workspace", "tab"]]
 
 [ui.toast]
 # Agent finished / needs input: ask the outer terminal (Ghostty) to post a desktop
