@@ -38,7 +38,8 @@ Claude Code's project state and is gitignored.
   `~/.local/bin/mise`. Commands and help: see the README.
 - **Herdr** — terminal workspace manager. Config `.config/herdr/config.toml` (defaults plus: theme
   follows Ghostty, toasts via the terminal, worktrees under `~/code`, battery and clock in the tab
-  bar). Commands and help: see the README. Cheat: `navi` → herdr.
+  bar, and prefix-free `ctrl`/`alt` chords for the daily actions, kept alongside the `ctrl+b`
+  defaults). Commands and help: see the README. Cheat: `navi` → herdr.
 - **zsh** — `.zsh_path.zsh` builds PATH and is sourced by both `.zshenv` and `.zprofile`;
   `.zshrc` is interactive-only setup. Plugins are plain clones under
   `~/.local/share/zsh/plugins/`, sourced in this order: powerlevel10k (theme), fzf-tab (after

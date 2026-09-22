@@ -23,3 +23,53 @@ delivery = "terminal"
 # New worktrees land at ~/code/<repo>/<branch-slug>, the existing sibling layout
 # next to each repo's .bare checkout.
 directory = "~/code"
+
+[keys]
+# Direct (prefix-free) chords added alongside the prefix defaults, which stay in the
+# arrays. Herdr consumes a direct chord in every pane, so that key never reaches the
+# shell or the app running in it. `ctrl+b ?` lists what is active.
+
+# Worktrees. remove_worktree asks for confirmation, runs `git worktree remove`, and
+# closes the worktree's workspace in the same step. It never deletes the branch.
+new_worktree = ["prefix+shift+g", "ctrl+w"]
+remove_worktree = "ctrl+d"
+
+# Workspaces, in sidebar order: k moves up, j moves down.
+previous_workspace = "ctrl+k"
+next_workspace = "ctrl+j"
+
+# Tabs.
+new_tab = ["prefix+c", "ctrl+t"]
+close_tab = ["prefix+shift+x", "ctrl+x"]
+previous_tab = ["prefix+p", "ctrl+h"]
+next_tab = ["prefix+n", "ctrl+l"]
+
+# Panes.
+focus_pane_left = ["prefix+h", "alt+h"]
+focus_pane_down = ["prefix+j", "alt+j"]
+focus_pane_up = ["prefix+k", "alt+k"]
+focus_pane_right = ["prefix+l", "alt+l"]
+swap_pane_left = ["prefix+shift+h", "alt+shift+h"]
+swap_pane_down = ["prefix+shift+j", "alt+shift+j"]
+swap_pane_up = ["prefix+shift+k", "alt+shift+k"]
+swap_pane_right = ["prefix+shift+l", "alt+shift+l"]
+split_vertical = ["prefix+v", "alt+s"]              # split right
+split_horizontal = ["prefix+minus", "alt+shift+s"]  # split down
+zoom = ["prefix+z", "alt+f"]
+close_pane = ["prefix+x", "alt+x"]
+edit_scrollback = ["prefix+e", "alt+e"]
+
+# Session.
+detach = ["prefix+q", "ctrl+q"]
+reload_config = ["prefix+shift+r", "ctrl+r"]
+open_notification_target = ["prefix+o", "ctrl+u"]
+
+# Ctrl+Shift+S: fzf file search in the focused pane. Terminals encode Ctrl+Shift+S
+# and Ctrl+S as the same byte (0x13), so zsh cannot tell them apart. Herdr can, so
+# this types the CSI u sequence for ctrl+shift+s into the pane and .zshrc binds
+# that sequence to fzf-file-widget. Runs via /bin/sh -lc from the pane's cwd.
+[[keys.command]]
+key = "ctrl+shift+s"
+type = "shell"
+description = "fzf file search (types ESC [115;6u into the focused pane)"
+command = "\"${HERDR_BIN_PATH:-herdr}\" pane send-text \"$HERDR_ACTIVE_PANE_ID\" \"$(printf '\\033[115;6u')\""

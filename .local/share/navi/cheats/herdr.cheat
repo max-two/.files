@@ -4,7 +4,7 @@
 herdr
 
 # Detach (everything keeps running)
-Ctrl+b q
+Ctrl+q  (or Ctrl+b q)
 
 # Stop the server and every pane in it
 herdr server stop
@@ -12,52 +12,79 @@ herdr server stop
 # Show every active keybinding
 Ctrl+b ?
 
-# New tab
-Ctrl+b c
+# Reload config.toml
+Ctrl+r  (or Ctrl+b Shift+r)
 
-# Split right / split down
-Ctrl+b v / Ctrl+b -
+# Jump to the target of the visible notification
+Ctrl+u  (or Ctrl+b o)
 
-# Move between panes
-Ctrl+b h / j / k / l
+# New tab / close tab
+Ctrl+t / Ctrl+x  (or Ctrl+b c / Ctrl+b Shift+x)
 
-# Zoom the focused pane
-Ctrl+b z
-
-# Close pane / close tab
-Ctrl+b x / Ctrl+b Shift+x
-
-# Next / previous tab, or jump to tab 1-9
-Ctrl+b n / Ctrl+b p / Ctrl+b 1..9
+# Previous / next tab, or jump to tab 1-9
+Ctrl+h / Ctrl+l / Ctrl+b 1..9  (or Ctrl+b p / Ctrl+b n)
 
 # Rename tab
 Ctrl+b Shift+t
 
-# Workspace navigation
-Ctrl+b w
+# Split right / split down
+Alt+s / Alt+Shift+s  (or Ctrl+b v / Ctrl+b -)
 
-# New workspace / rename / close
-Ctrl+b Shift+n / Ctrl+b Shift+w / Ctrl+b Shift+d
+# Move between panes
+Alt+h / j / k / l  (or Ctrl+b h / j / k / l)
 
-# Goto picker (workspaces, tabs, agents)
-Ctrl+b g
+# Swap the focused pane with its neighbour
+Alt+Shift+h / j / k / l  (or Ctrl+b Shift+h / j / k / l)
 
-# Toggle sidebar
-Ctrl+b b
+# Zoom the focused pane
+Alt+f  (or Ctrl+b z)
 
-# Copy mode (v select, y copy, / search, q quit)
-Ctrl+b [
+# Close pane
+Alt+x  (or Ctrl+b x)
+
+# Open the pane's scrollback in $EDITOR
+Alt+e  (or Ctrl+b e)
 
 # Resize mode
 Ctrl+b r
 
-# New worktree for the current repo (sidebar right-click on the workspace row)
+# Copy mode (v select, y copy, / search, q quit)
+Ctrl+b [
+
+# Workspace up / down the sidebar
+Ctrl+k / Ctrl+j
+
+# Workspace navigation
+Ctrl+b w
+
+# Goto picker (workspaces, tabs, agents)
+Ctrl+b g
+
+# New workspace / rename / close
+Ctrl+b Shift+n / Ctrl+b Shift+w / Ctrl+b Shift+d
+
+# Toggle sidebar
+Ctrl+b b
+
+# New worktree for the selected repo (parent row); also in the row's right-click menu
+Ctrl+w  (or Ctrl+b Shift+g)
+
+# Delete the worktree checkout and close its workspace (confirms first; never deletes the branch)
+Ctrl+d
+
+# In a zsh pane: fzf history search / fzf file search (Herdr bridges Ctrl+Shift+S)
+Ctrl+s / Ctrl+Shift+s
+
+# In a zsh pane: delete the previous word
+Ctrl+Backspace
+
+# New worktree from the CLI
 herdr worktree create --branch <branch>
 
 # Open an existing worktree checkout as a workspace
 herdr worktree open --branch <branch>
 
-# Delete a worktree checkout (never deletes the branch)
+# Delete a worktree checkout from the CLI (also closes its workspace)
 herdr worktree remove --workspace <workspace_id>
 
 # List agents and their states
@@ -66,7 +93,7 @@ herdr agent list
 # Explain why a pane shows the state it does
 herdr agent explain <pane_id>
 
-# Reload config.toml in the running server
+# Reload config.toml from the CLI
 herdr server reload-config
 
 # Client and server status

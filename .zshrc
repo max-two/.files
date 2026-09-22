@@ -51,6 +51,11 @@ fi
 bindkey "^[[A" history-search-backward
 bindkey "^[[B" history-search-forward
 
+# Ctrl+Backspace deletes the previous word. Herdr delivers it to the pane as ^H
+# (0x08), the same byte as Ctrl+H, but Ctrl+H itself never reaches the shell because
+# Herdr binds it to previous tab. Plain Backspace stays ^? (0x7f).
+bindkey '^H' backward-kill-word
+
 # ── Shell options ───────────────────────────────────────────────────────────
 setopt autocd            # cd by typing a directory name
 setopt auto_pushd        # cd pushes onto the directory stack
@@ -85,7 +90,18 @@ source "$ZSH_PLUGINS/fzf-tab/fzf-tab.plugin.zsh"   # after compinit, before auto
 
 # ── Tools ───────────────────────────────────────────────────────────────────
 eval "$(mise activate zsh)"   # tool PATH + env, recomputed at each prompt
-eval "$(fzf --zsh)"           # Ctrl-R history, Ctrl-T files, Alt-C dirs
+eval "$(fzf --zsh)"           # defines the widgets and binds Ctrl-R / Ctrl-T / Alt-C
+
+# Move fzf off Ctrl-R and Ctrl-T (Herdr consumes both) and hand those keys back to
+# zsh's defaults. History goes on Ctrl-S; flow control must be off or the terminal
+# swallows Ctrl-S as "stop output". Files go on Ctrl-Shift-S, which the terminal
+# cannot encode differently from Ctrl-S, so Herdr's ctrl+shift+s custom command
+# (config.toml [[keys.command]]) types the CSI u sequence for it into the pane.
+setopt noflowcontrol
+bindkey '^R' history-incremental-search-backward
+bindkey '^T' transpose-chars
+bindkey '^S' fzf-history-widget
+bindkey '^[[115;6u' fzf-file-widget
 
 # Machine-local interactive config. Untracked on purpose.
 [[ -f "$HOME/.localrc" ]] && source "$HOME/.localrc"
