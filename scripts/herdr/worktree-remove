@@ -16,8 +16,14 @@
 # about 20 s to rm, which is what `git worktree remove` spends its time on. So
 # each checkout is renamed to <repo>/.wt-removing.<name>.<pid> (instant on the
 # same volume), git drops the now-missing worktree, the Herdr workspace is
-# closed if one is open, and a detached rm deletes the renamed directory in the
-# background. Leftovers from an interrupted run are swept on the next start.
+# closed if one is open, and one detached shell deletes the renamed directories
+# in the background, one after another and at background disk priority:
+# parallel rms of trees this size saturate the disk, which also stalls
+# anything else touching it, such as Herdr creating a worktree. A renamed
+# directory's mtime is bumped when it is queued, and the filesystem bumps it
+# again as rm empties it, so a leftover untouched for an hour is a dead one;
+# those are swept on the next start. Younger leftovers are assumed to be in
+# progress and left alone.
 #
 # Only bash 3.2 is guaranteed (macOS /bin/bash), so the lookup tables live in a
 # temp TSV instead of associative arrays. Herdr runs popup commands through a
@@ -296,18 +302,38 @@ ask_force() {
   [ "$key" = f ] || [ "$key" = F ]
 }
 
-# Delete a renamed checkout without waiting for it. nohup survives the hangup
-# the popup sends on close; anything else that interrupts it is swept next run.
+# Delete renamed checkouts without waiting: one detached shell, sequential rms,
+# at background CPU and disk priority so foreground work (a `git worktree add`
+# in Herdr, say) is not starved: a batch of these deletes once saturated the
+# disk for minutes. taskpolicy is macOS; Linux gets nice and, if present,
+# ionice. nohup survives the hangup the popup sends on close (the rms from a
+# run kept going after its popup closed); a run that still dies is swept next
+# start.
 delete_in_background() {
-  nohup rm -rf "$1" >/dev/null 2>&1 &
+  local lowprio
+  if command -v taskpolicy >/dev/null 2>&1; then
+    lowprio="taskpolicy -b -d throttle"
+  elif command -v ionice >/dev/null 2>&1; then
+    lowprio="nice -n 19 ionice -c 3"
+  else
+    lowprio="nice -n 19"
+  fi
+  # shellcheck disable=SC2086
+  nohup $lowprio sh -c 'for d in "$@"; do rm -rf "$d"; done' worktree-remove-rm "$@" >/dev/null 2>&1 &
 }
 
-# Finish deletions an earlier run left behind.
+# Finish deletions an earlier run left behind: only directories nothing has
+# touched for an hour, so a delete still in progress is not started twice.
 sweep_leftovers() {
-  local d
-  for d in "$code_root"/*/.wt-removing.*; do
-    [ -d "$d" ] && delete_in_background "$d"
+  local dir d
+  set --
+  for dir in "$code_root"/*/; do
+    for d in "$dir".wt-removing.*; do
+      [ -d "$d" ] || continue
+      [ -z "$(find "$d" -maxdepth 0 -mmin -60 2>/dev/null)" ] && set -- "$@" "$d"
+    done
   done
+  [ "$#" -gt 0 ] && delete_in_background "$@"
 }
 
 # Remove one worktree. Returns 0 when it is gone, 1 when it was left in place.
@@ -334,6 +360,7 @@ remove_one() {
       printf '%s\n' "$err"
       return 1
     fi
+    touch "$trash"   # queued now; see sweep_leftovers
   fi
 
   # With the directory gone git treats the entry as prunable and drops it
@@ -351,7 +378,7 @@ remove_one() {
   fi
 
   if [ -n "$trash" ]; then
-    delete_in_background "$trash"
+    trash_dirs+=("$trash")
     pending=$((pending + 1))
   fi
 
@@ -405,6 +432,7 @@ selection=$(render_lines | WORKTREE_REMOVE_ROWS="$rows_file" fzf \
 [ -n "$selection" ] || exit 0
 
 removed=0 kept=0 pending=0
+trash_dirs=()
 while IFS= read -r path; do
   [ -n "$path" ] || continue
   if remove_one "$path"; then
@@ -415,6 +443,8 @@ while IFS= read -r path; do
     kept=$((kept + 1))
   fi
 done <<< "$selection"
+
+[ "$pending" -gt 0 ] && delete_in_background "${trash_dirs[@]}"
 
 printf '%s%d removed%s' "$c_bold" "$removed" "$c_reset"
 [ "$kept" -gt 0 ] && printf ', %s%d left in place%s' "$c_open" "$kept" "$c_reset"
