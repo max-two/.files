@@ -89,7 +89,11 @@ compinit
 source "$ZSH_PLUGINS/fzf-tab/fzf-tab.plugin.zsh"   # after compinit, before autosuggestions
 
 # ── Tools ───────────────────────────────────────────────────────────────────
-eval "$(mise activate zsh)"   # tool PATH + env, recomputed at each prompt
+# Interactive only: activate's hook runs at each prompt, which agent shells never show,
+# so they'd freeze PATH at the global versions. Non-interactive shells keep .zshenv's shims.
+if [[ -o interactive ]]; then
+  eval "$(mise activate zsh)"   # tool PATH + env, recomputed at each prompt
+fi
 eval "$(fzf --zsh)"           # defines the widgets and binds Ctrl-R / Ctrl-T / Alt-C
 
 # Move fzf off Ctrl-R and Ctrl-T (Herdr consumes both) and hand those keys back to

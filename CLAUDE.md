@@ -78,8 +78,10 @@ sections, everything else under "Tool docs and help".
 - **Only git-tracked files get linked.** `manifest = "git"` means a new file is invisible to
   `mise dot apply` until `git add`. Deleting or excluding a tracked file removes its link.
 - **PATH follows mise's model.** `.zshenv` puts `~/.local/share/mise/shims` on PATH statically (no
-  fork) so scripts and agent shells see tools; `.zshrc` runs `mise activate zsh`, which swaps shims
-  for real tool paths at every prompt. `.zprofile` re-sources the PATH file because macOS
+  fork) so scripts and agent shells see tools; `.zshrc` runs `mise activate zsh` in interactive
+  shells only, which swaps shims for real tool paths at every prompt. Unguarded, it froze Claude
+  Code's non-interactive snapshot at the global versions, since its prompt hook never runs there,
+  so repo pins like `packageManager` were ignored. `.zprofile` re-sources the PATH file because macOS
   `/etc/zprofile` runs `path_helper` after `.zshenv` and reorders PATH; Herdr starts login shells,
   so every pane passes through it. Herdr's own custom-command keybinds never see the zsh files:
   `type = "shell"` runs via `/bin/sh -lc` (reads `~/.profile`), `pane` and `popup` via a
