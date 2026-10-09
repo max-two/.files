@@ -6,10 +6,18 @@
 set -eu
 cd "$(dirname "$0")"
 
-if [ ! -x "$HOME/.local/bin/mise" ] && ! command -v mise >/dev/null 2>&1; then
+# Always our own mise: the one a Coder box ships (apt, /usr/bin/mise) is too old
+# to parse mise.toml.
+if [ ! -x "$HOME/.local/bin/mise" ]; then
   curl -fsSL https://mise.run | sh
 fi
 export PATH="$HOME/.local/bin:$PATH"
 
 mise trust
 mise bootstrap --yes
+
+# Coder accounts start on bash and have no password, so mise's own login-shell
+# setting (a plain chsh) fails there. mise installs zsh above.
+if [ "$(uname -s)" = Linux ]; then
+  sudo chsh -s /bin/zsh "$(id -un)"
+fi

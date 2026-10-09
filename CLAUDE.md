@@ -24,7 +24,7 @@ Two mise config files with different jobs:
 Dotfiles are linked by mise, not Stow. `[dotfiles]` in `mise.toml` has three `symlink-each` entries
 (`~/.config`, `~/.local/share/navi/cheats`, `~/scripts`: real directories at the target, one link
 per **git-tracked** file, untracked files ignored) plus one `symlink` entry per home-level file
-(`.zshenv`, `.zprofile`, `.zshrc`, `.zsh_path.zsh`, `.p10k.zsh`, `.gitconfig`) and one `copy`
+(`.zshenv`, `.zprofile`, `.zshrc`, `.zsh_path.zsh`, `.p10k.zsh`) and one `copy`
 entry for `.linear/coding-tools.json`, which Linear rewrites.
 
 Machine-local and never tracked: `~/.localenv` (sourced by `.zshenv`, e.g. `NODE_AUTH_TOKEN`),
@@ -58,7 +58,8 @@ sections, everything else under "Tool docs and help".
   bundled themes and `history/` into that directory at runtime, which `symlink-each` tolerates.
 - **difftastic** — git's external diff via `.gitconfig`; `lg` and `shw` aliases re-enable it for
   `log -p` and `show`. Opt out per command with `--no-ext-diff`.
-- **git** — `.gitconfig`; global excludes in `.config/git/ignore` (`*.local`, `*.local.*`).
+- **git** — `.config/git/config` (git's XDG location, not `~/.gitconfig`; see Coder below);
+  global excludes in `.config/git/ignore` (`*.local`, `*.local.*`).
 - **OpenCode** — `.config/opencode/`, carried over as-is.
 - **Scripts** (`scripts/`): `battery/battery-status` (plain text for Herdr's tab bar),
   `claude/statusline.sh` (Claude Code status line; wired by the machine-local
@@ -128,6 +129,11 @@ sections, everything else under "Tool docs and help".
   itself. It requires a working-directory preselected on the issue (`LINEAR_WORK_DIR`) and a
   running Herdr server; it notifies via Notification Center and exits otherwise.
 - **`hx-open`** uses `herdr pane run`, so quitting Helix leaves a shell in that tab.
-- **Coder**: `install.sh` is the first script name `coder dotfiles` looks for. Casks other than
-  fonts skip on Linux automatically. GitHub-release downloads can hit API rate limits on shared
+- **Coder**: `install.sh` is the first script name `coder dotfiles` looks for; Coder runs it on
+  every workspace start, from the clone at `~/.config/coderv2/dotfiles`, logging to
+  `~/.dotfiles.log`. It installs its own mise because the box's apt mise is too old to parse
+  `mise.toml`, and it runs `sudo chsh` because Coder accounts have no password, so a plain
+  `chsh` fails. Coder writes work identity and commit signing into a real `~/.gitconfig` at
+  every start, which is why git config lives in `~/.config/git/config`: git reads it first,
+  so Coder's keys win. Casks other than fonts skip on Linux automatically. GitHub-release downloads can hit API rate limits on shared
   boxes; set `MISE_GITHUB_TOKEN` in `~/.localenv` there.

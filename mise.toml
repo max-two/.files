@@ -21,7 +21,6 @@
 "~/.zshrc" = ".zshrc"
 "~/.zsh_path.zsh" = ".zsh_path.zsh"
 "~/.p10k.zsh" = ".p10k.zsh"
-"~/.gitconfig" = ".gitconfig"
 # Linear rewrites this file when its settings change, so it is a copy, not a link.
 # The Linear desktop app is macOS-only.
 "~/.linear/coding-tools.json" = { source = ".linear/coding-tools.json", mode = "copy", variants = [{ os = "macos" }] }
@@ -34,12 +33,14 @@
 "~/.local/share/zsh/plugins/zsh-completions" = { url = "https://github.com/zsh-users/zsh-completions.git" }
 "~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions.git" }
 
-# GUI apps, the font, and navi. mise pours Homebrew bottles and casks itself (no
-# `brew` needed) and leaves Homebrew-owned installs alone. Casks other than fonts
-# skip on Linux. navi is a formula, not a [tools] entry, because its upstream
-# releases (and so the aqua/ubi backends) have no macOS build.
+# GUI apps, the font, navi, and zsh on Linux. mise pours Homebrew bottles and casks
+# itself (no `brew` needed) and leaves Homebrew-owned installs alone. Casks other
+# than fonts skip on Linux. navi is a formula, not a [tools] entry, because its
+# upstream releases (and so the aqua/ubi backends) have no macOS build. apt runs
+# through sudo, which a Coder box grants without a password.
 [bootstrap.packages]
 "brew:navi" = "latest"
+"apt:zsh" = { os = "linux" }
 "brew-cask:ghostty" = { os = "macos" }
 "brew-cask:obsidian" = { os = "macos" }
 "brew-cask:font-jetbrains-mono-nerd-font" = "latest"
