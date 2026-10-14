@@ -105,7 +105,8 @@ sections, everything else under "Tool docs and help".
 - **Backends**: `ubi:` is deprecated in mise; use `github:owner/repo` (revdiff does).
 - **mise inside Claude Code's sandboxed Bash tool.** Any mise command that needs the network
   (installs, version resolution, `mise up`) fails there with TLS certificate errors from the
-  sandbox proxy. That is the sandbox, not mise; run those commands with the sandbox disabled.
+  sandbox proxy. That is the sandbox, not mise; the machine-local `sandbox.excludedCommands`
+  runs plain `mise` commands outside it.
 - **Herdr's Claude integration is machine-local.** `herdr integration install claude` writes
   `~/.claude/hooks/herdr-agent-state.sh` and a `SessionStart` hook into `~/.claude/settings.json`.
   It reports the session id for `claude --resume` after a Herdr restart; Claude's working/blocked
