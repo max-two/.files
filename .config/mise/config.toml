@@ -39,4 +39,5 @@ marksman = "latest"
 # review, agents, extraction
 "github:umputun/revdiff" = "latest"
 opencode = "latest"
+agent-browser = "latest"
 "npm:defuddle" = "latest"
