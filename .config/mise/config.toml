@@ -8,10 +8,10 @@ idiomatic_version_file_enable_tools = ["node", "npm", "pnpm", "yarn", "python"]
 python.uv_venv_auto = "source"
 
 [tools]
-# runtimes and package managers (repo pins override these fallbacks)
+# runtimes (repo pins override these fallbacks). No global yarn or pnpm: every repo
+# pins its own in package.json "packageManager", and without a global version ahead
+# of them on PATH, the shims read that pin each time yarn or pnpm runs.
 node = "lts"
-pnpm = "latest"
-yarn = "latest"
 uv = "latest"
 
 # terminal workspace manager

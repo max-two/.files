@@ -80,9 +80,10 @@ sections, everything else under "Tool docs and help".
   `mise dot apply` until `git add`. Deleting or excluding a tracked file removes its link.
 - **PATH follows mise's model.** `.zshenv` puts `~/.local/share/mise/shims` on PATH statically (no
   fork) so scripts and agent shells see tools; `.zshrc` runs `mise activate zsh` in interactive
-  shells only, which swaps shims for real tool paths at every prompt. Unguarded, it froze Claude
-  Code's non-interactive snapshot at the global versions, since its prompt hook never runs there,
-  so repo pins like `packageManager` were ignored. `.zprofile` re-sources the PATH file because macOS
+  shells only, which swaps shims for real tool paths at every prompt. Programs started from that
+  shell inherit those paths, pinned to the directory they started in, and Claude Code runs every
+  command with the PATH it started with: hence no global yarn or pnpm ("Project pins" below).
+  `.zprofile` re-sources the PATH file because macOS
   `/etc/zprofile` runs `path_helper` after `.zshenv` and reorders PATH; Herdr starts login shells,
   so every pane passes through it. Herdr's own custom-command keybinds never see the zsh files:
   `type = "shell"` runs via `/bin/sh -lc` (reads `~/.profile`), `pane` and `popup` via a
@@ -93,8 +94,12 @@ sections, everything else under "Tool docs and help".
   record every agent directory change.
 - **Project pins beat global versions.** `idiomatic_version_file_enable_tools` makes mise honour
   `.nvmrc`, `.node-version`, `.tool-versions`, `.python-version`, and `package.json`
-  `packageManager` (with its `+sha` checksum). Global `node`, `pnpm`, `yarn` are only fallbacks.
-  This replaces both fnm and Corepack.
+  `packageManager` (with its `+sha` checksum). Global `node` is only a fallback. There is no global
+  `yarn` or `pnpm`: in a directory that doesn't pin one, activate would put the global version on
+  PATH ahead of the shims, and a program started there (Claude Code) would keep running it after
+  `cd` into a repo that pins another. Without one, the shims read `packageManager` each time, as
+  Corepack did. Outside such a repo, `mise x yarn@latest -- yarn …`. This replaces both fnm and
+  Corepack.
 - **Python**: `uv` is the tool; `python.uv_venv_auto = "source"` activates a uv project's `.venv`
   when entering it (needs `uv.lock`; needs `mise activate`, not shims).
 - **No lockfile, on purpose.** `lockfile = true` was tried and dropped: with the global config
