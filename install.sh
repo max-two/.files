@@ -14,9 +14,11 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 mise trust
-# A Coder box from the current template has its own system config in /etc/mise. Its
-# bootstrap hooks only work as root, and the template applies it on every start itself.
-MISE_IGNORED_CONFIG_PATHS=/etc/mise mise bootstrap --yes
+# A Coder box from the current template has a system config in /etc/mise, which the template
+# applies as root on every start. Hide it here, or this user-level bootstrap tries to apply it
+# too (root-only hooks, apt installs). MISE_IGNORED_CONFIG_PATHS is not enough: mise 2026.11
+# still reads ignored files for its bootstrap history and then fails on them as untrusted.
+MISE_SYSTEM_CONFIG_DIR=/nonexistent mise bootstrap --yes
 
 # Coder accounts start on bash and have no password, so mise's own login-shell
 # setting (a plain chsh) fails there. mise installs zsh above.

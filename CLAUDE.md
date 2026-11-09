@@ -138,15 +138,17 @@ sections, everything else under "Tool docs and help".
 - **`hx-open`** uses `herdr pane run`, so quitting Helix leaves a shell in that tab.
 - **Coder**: `install.sh` is the first script name `coder dotfiles` looks for; Coder runs it on
   every workspace start, from the clone at `~/.config/coderv2/dotfiles`, logging to
-  `~/.dotfiles.log`. It installs its own mise because the box's apt mise is too old to parse
-  `mise.toml`, and it runs `sudo chsh` because Coder accounts have no password, so a plain
-  `chsh` fails. Workspaces from the current template also have a system mise config in
-  `/etc/mise`, which mise loads for every user. Its bootstrap `final` hooks only work as root
-  (the first one symlinks zmx into `/usr/local/bin`), so a plain `mise bootstrap` fails there
-  with Permission denied. The template applies that config itself at every start, so
-  `install.sh` runs the bootstrap as `MISE_IGNORED_CONFIG_PATHS=/etc/mise mise bootstrap --yes`;
-  run it the same way by hand. `--dry-run` and the `repos` and `packages` subcommands don't run
-  final hooks. Coder writes work identity and commit signing into a real `~/.gitconfig` at
+  `~/.dotfiles.log`. It installs its own mise rather than use the box's: older boxes have an apt
+  mise (2026.8.2) too old to parse `mise.toml`, and the current template pins a root-owned mise
+  (2026.10.15 in November 2026) that reads it fine but only changes version when the template
+  does. It runs `sudo chsh` because Coder accounts have no password, so a plain `chsh` fails. Workspaces from the current template also have a system mise config in
+  `/etc/mise`, which the template applies as root at every start and mise loads for every
+  user. A plain `mise bootstrap` there tries to apply it as well (apt packages, the docker
+  service, root-only `final` hooks) and fails. `install.sh` hides it from its bootstrap with
+  `MISE_SYSTEM_CONFIG_DIR=/nonexistent`; put the same prefix on any `mise bootstrap` command you
+  run by hand there. `MISE_IGNORED_CONFIG_PATHS=/etc/mise` is not enough as of mise 2026.11.4:
+  the bootstrap still reads the ignored file for its history and fails on it as untrusted.
+  Coder writes work identity and commit signing into a real `~/.gitconfig` at
   every start, which is why git config lives in `~/.config/git/config`: git reads it first,
   so Coder's keys win. Casks other than fonts skip on Linux automatically. GitHub-release downloads can hit API rate limits on shared
   boxes; set `MISE_GITHUB_TOKEN` in `~/.localenv` there.
