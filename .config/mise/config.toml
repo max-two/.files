@@ -7,6 +7,9 @@
 idiomatic_version_file_enable_tools = ["node", "npm", "pnpm", "yarn", "python"]
 python.uv_venv_auto = "source"
 
+[settings.self_update]
+auto = true
+
 [tools]
 # runtimes (repo pins override these fallbacks). No global yarn or pnpm: every repo
 # pins its own in package.json "packageManager", and without a global version ahead
