@@ -35,7 +35,7 @@ the repo. Tools are declared as `latest`; there is no lockfile, so each machine 
 | See the diff a link or copy would make | `mise dot diff` |
 | Link newly added files | `git add <file>` then `mise dot apply` |
 | Preview any change before applying | `mise bootstrap --dry-run` |
-| Reapply everything | `mise bootstrap` |
+| Reapply everything | `mise bootstrap`; on a Coder box, `./install.sh` (see Coder in `CLAUDE.md`) |
 | What is installed, and what a directory resolves to | `mise ls`, `mise ls --current` |
 | What is newer, then update | `mise outdated`, `mise up` |
 | Update one tool | `mise up <tool>` |

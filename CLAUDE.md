@@ -15,7 +15,8 @@ Two mise config files with different jobs:
 - `mise.toml` (repo root) is the **bootstrap project**. It declares the dotfile links, the zsh
   plugin clones (`[bootstrap.repos]`), the Homebrew casks and formulae mise pours itself
   (`[bootstrap.packages]`), and a `bootstrap` task that writes shell completions to `~/.zfunc`.
-  Run it from the repo directory: `mise trust && mise bootstrap`, or `./install.sh`.
+  Run it from the repo directory: `mise trust && mise bootstrap`, or `./install.sh`. On a box from
+  the current Coder template, a plain `mise bootstrap` fails; see Coder under Things to know.
 - `.config/mise/config.toml` is the **global config**: every tool and mise setting that applies
   everywhere. The bootstrap links it to `~/.config/mise/config.toml`, so `mise use -g` edits the
   repo file. Every tool is declared as `latest` and there is deliberately **no lockfile**: each
@@ -139,7 +140,13 @@ sections, everything else under "Tool docs and help".
   every workspace start, from the clone at `~/.config/coderv2/dotfiles`, logging to
   `~/.dotfiles.log`. It installs its own mise because the box's apt mise is too old to parse
   `mise.toml`, and it runs `sudo chsh` because Coder accounts have no password, so a plain
-  `chsh` fails. Coder writes work identity and commit signing into a real `~/.gitconfig` at
+  `chsh` fails. Workspaces from the current template also have a system mise config in
+  `/etc/mise`, which mise loads for every user. Its bootstrap `final` hooks only work as root
+  (the first one symlinks zmx into `/usr/local/bin`), so a plain `mise bootstrap` fails there
+  with Permission denied. The template applies that config itself at every start, so
+  `install.sh` runs the bootstrap as `MISE_IGNORED_CONFIG_PATHS=/etc/mise mise bootstrap --yes`;
+  run it the same way by hand. `--dry-run` and the `repos` and `packages` subcommands don't run
+  final hooks. Coder writes work identity and commit signing into a real `~/.gitconfig` at
   every start, which is why git config lives in `~/.config/git/config`: git reads it first,
   so Coder's keys win. Casks other than fonts skip on Linux automatically. GitHub-release downloads can hit API rate limits on shared
   boxes; set `MISE_GITHUB_TOKEN` in `~/.localenv` there.
